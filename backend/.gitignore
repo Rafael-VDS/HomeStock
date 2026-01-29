@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# logs
+logs
+*.log
+
+# macOS
+.DS_Store
+*.pem
+
+# environment variables
+.env
+.env.local
+.env.*.local
+
+# build
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# coverage
+coverage/
+.nyc_output/

@@ -1,0 +1,13 @@
+FROM node:24-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install -g expo-cli && npm install
+
+COPY . .
+
+EXPOSE 8081 8082 8083
+
+CMD ["npx", "expo", "start", "--tunnel", "--port", "8081", "--dev-client"]
