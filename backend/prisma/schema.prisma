@@ -1,0 +1,199 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================= USERS =================
+model User {
+  id          Int          @id @default(autoincrement())
+  firstname   String
+  lastname    String
+  mail        String
+  picture     String?
+  password    String
+  permissions Permission[]
+
+  @@map("users")
+}
+
+// ================= HOMES =================
+model Home {
+  id              Int              @id @default(autoincrement())
+  name            String
+  permissions     Permission[]
+  categories      Category[]
+  products        Product[]
+  productBatches  ProductBatch[]
+  cart            Cart?
+  recipes         Recipe[]
+
+  @@map("homes")
+}
+
+// ================= PERMISSIONS =================
+model Permission {
+  id      Int    @id @default(autoincrement())
+  userId  Int    @map("user_id")
+  homeId  Int    @map("home_id")
+  type    String
+  user    User   @relation(fields: [userId], references: [id])
+  home    Home   @relation(fields: [homeId], references: [id])
+
+  @@unique([userId, homeId])
+  @@map("permissions")
+}
+
+// ================= CATEGORIES =================
+model Category {
+  id             Int            @id @default(autoincrement())
+  homeId         Int            @map("home_id")
+  name           String
+  picture        String
+  home           Home           @relation(fields: [homeId], references: [id])
+  subcategories  Subcategory[]
+
+  @@map("categories")
+}
+
+model Subcategory {
+  id                     Int                     @id @default(autoincrement())
+  categoryId             Int                     @map("category_id")
+  name                   String
+  category               Category                @relation(fields: [categoryId], references: [id])
+  subcategoriesProducts  SubcategoryProduct[]
+
+  @@map("subcategories")
+}
+
+// ================= PRODUCTS =================
+model Product {
+  id                     Int                  @id @default(autoincrement())
+  homeId                 Int                  @map("home_id")
+  name                   String
+  picture                String
+  mass                   Int?
+  liquid                 Int?
+  home                   Home                 @relation(fields: [homeId], references: [id])
+  subcategoriesProducts  SubcategoryProduct[]
+  productBatches         ProductBatch[]
+  cartProducts           CartProduct[]
+  recipeProducts         RecipeProduct[]
+
+  @@map("products")
+}
+
+model SubcategoryProduct {
+  id             Int          @id @default(autoincrement())
+  subcategoryId  Int          @map("subcategory_id")
+  productId      Int          @map("product_id")
+  subcategory    Subcategory  @relation(fields: [subcategoryId], references: [id])
+  product        Product      @relation(fields: [productId], references: [id])
+
+  @@unique([subcategoryId, productId])
+  @@map("subcategories_products")
+}
+
+// ================= STOCK REEL (unités physiques) =================
+model ProductBatch {
+  id             Int       @id @default(autoincrement())
+  productId      Int       @map("product_id")
+  homeId         Int       @map("home_id")
+  expirationDate DateTime? @map("expiration_date") @db.Date
+  product        Product   @relation(fields: [productId], references: [id])
+  home           Home      @relation(fields: [homeId], references: [id])
+
+  @@index([homeId, productId])
+  @@map("product_batches")
+}
+
+// ================= CART (1 par maison) =================
+model Cart {
+  id           Int           @id @default(autoincrement())
+  homeId       Int           @unique @map("home_id")
+  home         Home          @relation(fields: [homeId], references: [id])
+  cartProducts CartProduct[]
+
+  @@map("carts")
+}
+
+model CartProduct {
+  id        Int     @id @default(autoincrement())
+  cartId    Int     @map("cart_id")
+  productId Int     @map("product_id")
+  quantity  Int     @default(1)
+  checked   Boolean @default(false)
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+  @@map("carts_products")
+}
+
+// ================= RECIPES =================
+model Recipe {
+  id             Int                 @id @default(autoincrement())
+  homeId         Int                 @map("home_id")
+  name           String
+  picture        String
+  prepTime       Int                 @map("prep_time")
+  recipe         String
+  home           Home                @relation(fields: [homeId], references: [id])
+  recipeProducts RecipeProduct[]
+  recipeSteps    RecipeStep[]
+  recipeTags     RecipeRecipeTag[]
+
+  @@map("recipes")
+}
+
+model RecipeProduct {
+  id              Int     @id @default(autoincrement())
+  recipeId        Int     @map("recipe_id")
+  productId       Int     @map("product_id")
+  quantityNeeded  Int?    @map("quantity_needed")
+  multipliable    Boolean
+  recipe          Recipe  @relation(fields: [recipeId], references: [id])
+  product         Product @relation(fields: [productId], references: [id])
+
+  @@unique([recipeId, productId])
+  @@map("recipes_products")
+}
+
+// ================= RECIPE STEPS =================
+model RecipeStep {
+  id         Int    @id @default(autoincrement())
+  recipeId   Int    @map("recipe_id")
+  stepNumber Int    @map("step_number")
+  content    String
+  recipe     Recipe @relation(fields: [recipeId], references: [id])
+
+  @@unique([recipeId, stepNumber])
+  @@map("recipe_steps")
+}
+
+// ================= RECIPE TAGS =================
+model RecipeTag {
+  id         Int               @id @default(autoincrement())
+  name       String            @unique
+  recipes    RecipeRecipeTag[]
+
+  @@map("recipe_tags")
+}
+
+model RecipeRecipeTag {
+  id       Int       @id @default(autoincrement())
+  recipeId Int       @map("recipe_id")
+  tagId    Int       @map("tag_id")
+  recipe   Recipe    @relation(fields: [recipeId], references: [id])
+  tag      RecipeTag @relation(fields: [tagId], references: [id])
+
+  @@unique([recipeId, tagId])
+  @@map("recipes_recipe_tags")
+}
+

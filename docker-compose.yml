@@ -3,31 +3,30 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: backend-dev
+    container_name: homestock-backend
     volumes:
-      - ./backend:/backend
-      - /backend/node_modules
+      - ./backend:/app
+      - /app/node_modules
     ports:
-      - "${BACKEND_PORT}:3000"
+      - "3000:3000"
     environment:
-      DB_BACKEND_USER: ${DB_BACKEND_USER}
-      DB_BACKEND_PASSWORD: ${DB_BACKEND_PASSWORD}
-      DB_BACKEND_NAME: ${DB_BACKEND_NAME}
-      DB_BACKEND_HOST: ${DB_BACKEND_HOST}
-      DB_BACKEND_PORT: ${MYSQL_PORT}
+      DATABASE_URL: postgresql://${DB_BACKEND_USER}:${DB_BACKEND_PASSWORD}@backend_db:5432/${DB_BACKEND_NAME}?schema=public
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
-      - backend_db
+      backend_db:
+        condition: service_healthy
 
 
   frontend:
-    build: ./frontend
-    container_name: frontend-dev
+    build: ./mobile
+    container_name: homestock-frontend-dev
     ports:
       - "${FRONTEND_PORT}:8081"
       - "${FRONTEND_PORT_2}:8082"
       - "${FRONTEND_PORT_3}:8083"
     volumes:
-      - ./frontend:/app
+      - ./mobile:/app
       - /app/node_modules
     stdin_open: true
     tty: true
@@ -37,33 +36,38 @@ services:
     command: >
       sh -c "npx expo start --tunnel --port 8081 --dev-client"
 
-  # MySQL pour le backend
+  # PostgreSQL pour le backend
   backend_db:
-    image: mysql:8.0
-    container_name: backend-db
+    image: postgres:16-alpine
+    container_name: homestock-db
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_BACKEND_NAME}
-      MYSQL_USER: ${DB_BACKEND_USER}
-      MYSQL_PASSWORD: ${DB_BACKEND_PASSWORD}
+      POSTGRES_USER: ${DB_BACKEND_USER}
+      POSTGRES_PASSWORD: ${DB_BACKEND_PASSWORD}
+      POSTGRES_DB: ${DB_BACKEND_NAME}
     ports:
-      - "${MYSQL_PORT}:3306"
+      - "5432:5432"
     volumes:
-      - backend_db_data:/var/lib/mysql
+      - backend_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_BACKEND_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  # phpMyAdmin pour gérer la base de données
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: phpmyadmin
+  # pgAdmin pour gérer la base de données PostgreSQL
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: homestock-pgadmin
     environment:
-      PMA_HOST: ${DB_BACKEND_HOST}
-      PMA_PORT: ${MYSQL_PORT}
-      PMA_USER: ${MYSQL_ROOT_USER}
-      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
     ports:
-      - "${PHPMYADMIN_PORT}:80"
+      - "8080:80"
     depends_on:
       - backend_db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
 
 volumes:
   backend_db_data:
+  pgadmin_data:

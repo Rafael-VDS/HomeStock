@@ -1,34 +1,58 @@
-# dependencies
-node_modules/
+# compiled output
+/dist
+/node_modules
+/build
 
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# logs
+# Logs
 logs
 *.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
-# macOS
+# OS
 .DS_Store
-*.pem
 
-# environment variables
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# dotenv environment variable files
 .env
+.env.development.local
+.env.test.local
+.env.production.local
 .env.local
-.env.*.local
 
-# build
-dist/
-build/
+# temp directory
+.temp
+.tmp
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# coverage
-coverage/
-.nyc_output/
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+/generated/prisma
