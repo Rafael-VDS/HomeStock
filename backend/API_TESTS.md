@@ -1,6 +1,6 @@
-# 🧪 Tests API - Users Module
+# 🧪 Tests API - HomeStock
 
-> Requêtes pour tester les endpoints du module Users
+> Requêtes pour tester les endpoints de l'API
 
 ## 📋 Prérequis
 
@@ -9,6 +9,144 @@
 - Documentation Swagger : `http://localhost:3000/api/docs`
 
 ---
+
+# 🔐 Module Auth
+
+## 1️⃣ Inscription (Register)
+
+### Request
+```bash
+POST http://localhost:3000/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "firstname": "Marie",
+  "lastname": "Dubois",
+  "mail": "marie.dubois@example.com",
+  "password": "SecurePass123!",
+  "picture": "/uploads/avatars/marie-dubois.jpg"
+}
+```
+
+### cURL
+```bash
+curl -X POST http://localhost:3000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d "{\"firstname\":\"Marie\",\"lastname\":\"Dubois\",\"mail\":\"marie.dubois@example.com\",\"password\":\"SecurePass123!\",\"picture\":\"/uploads/avatars/marie-dubois.jpg\"}"
+```
+
+### Response attendue (201 Created)
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjExLCJlbWFpbCI6Im1hcmllLmR1Ym9pc0BleGFtcGxlLmNvbSIsImlhdCI6MTcwNzA0NTEyMywiZXhwIjoxNzA3MDQ4NzIzfQ...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "user": {
+    "id": 11,
+    "firstname": "Marie",
+    "lastname": "Dubois",
+    "mail": "marie.dubois@example.com",
+    "picture": "/uploads/avatars/marie-dubois.jpg"
+  }
+}
+```
+
+---
+
+## 2️⃣ Connexion (Login)
+
+### Request
+```bash
+POST http://localhost:3000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "mail": "alice.martin@example.com",
+  "password": "Password123"
+}
+```
+
+### cURL
+```bash
+curl -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d "{\"mail\":\"alice.martin@example.com\",\"password\":\"Password123\"}"
+```
+
+### Response attendue (200 OK)
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiYWxpY2UubWFydGluQGV4YW1wbGUuY29tIiwiaWF0IjoxNzA3MDQ1MTIzLCJleHAiOjE3MDcwNDg3MjN9...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "user": {
+    "id": 1,
+    "firstname": "Alice",
+    "lastname": "Martin",
+    "mail": "alice.martin@example.com",
+    "picture": "/uploads/avatars/alice-martin.jpg"
+  }
+}
+```
+
+---
+
+## 3️⃣ Récupérer son profil (protégé)
+
+**⚠️ Nécessite un token JWT dans le header Authorization**
+
+### Request
+```bash
+GET http://localhost:3000/api/v1/auth/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### cURL
+```bash
+curl -X GET http://localhost:3000/api/v1/auth/profile \
+  -H "Authorization: Bearer VOTRE_TOKEN_ICI"
+```
+
+### Response attendue (200 OK)
+```json
+{
+  "id": 1,
+  "firstname": "Alice",
+  "lastname": "Martin",
+  "mail": "alice.martin@example.com",
+  "picture": "/uploads/avatars/alice-martin.jpg"
+}
+```
+
+### Erreurs possibles
+
+**401 Unauthorized - Token manquant ou invalide**
+```json
+{
+  "statusCode": 401,
+  "message": "Unauthorized"
+}
+```
+
+**401 Unauthorized - Mauvais identifiants (login)**
+```json
+{
+  "statusCode": 401,
+  "message": "Email ou mot de passe incorrect"
+}
+```
+
+**409 Conflict - Email déjà utilisé (register)**
+```json
+{
+  "statusCode": 409,
+  "message": "Un utilisateur avec cet email existe déjà"
+}
+```
+
+---
+
+# 👤 Module Users
 
 ## 1️⃣ Créer un utilisateur
 
