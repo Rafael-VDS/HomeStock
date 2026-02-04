@@ -4,12 +4,19 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Activer CORS
   app.enableCors();
+
+  // Servir les fichiers statiques (avatars, images)
+  app.useStaticAssets(join(__dirname, '..', 'public'), {
+    prefix: '/uploads/',
+  });
 
   // Préfixe global pour toutes les routes API
   app.setGlobalPrefix('api/v1');
