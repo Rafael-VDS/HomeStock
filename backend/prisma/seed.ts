@@ -44,7 +44,51 @@ async function main() {
       console.log(`⏭️  User already exists: ${user.firstname} ${user.lastname}`);
     }
   }
+  // Créer une maison de démonstration
+  const demoHome = await prisma.home.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      name: 'Maison Familiale',
+    },
+  });
+  console.log(`✅ Created home: ${demoHome.name}`);
 
+  // Liste des catégories avec images
+  const categories = [
+    { name: 'Fruits et Légumes', picture: '/uploads/categories/fruits.jpg' },
+    { name: 'Légumes', picture: '/uploads/categories/legumes.jpg' },
+    { name: 'Viandes et Poissons', picture: '/uploads/categories/viandes.jpg' },
+    { name: 'Céréales et Pâtes', picture: '/uploads/categories/cereales.jpg' },
+    { name: 'Produits Laitiers', picture: '/uploads/categories/produits-laitiers.jpg' },
+    { name: 'Boissons', picture: '/uploads/categories/boissons.jpg' },
+    { name: 'Snacks et Confiseries', picture: '/uploads/categories/snacks.jpg' },
+    { name: 'Surgelés', picture: '/uploads/categories/surgeles.jpg' },
+    { name: 'Condiments et Sauces', picture: '/uploads/categories/condiments.jpg' },
+    { name: 'Hygiène et Entretien', picture: '/uploads/categories/hygiene.jpg' },
+  ];
+
+  for (const category of categories) {
+    const existingCategory = await prisma.category.findFirst({
+      where: {
+        homeId: demoHome.id,
+        name: category.name,
+      },
+    });
+
+    if (!existingCategory) {
+      await prisma.category.create({
+        data: {
+          homeId: demoHome.id,
+          name: category.name,
+          picture: category.picture,
+        },
+      });
+      console.log(`✅ Created category: ${category.name}`);
+    } else {
+      console.log(`⏭️  Category already exists: ${category.name}`);
+    }
+  }
   console.log('🎉 Seed completed!');
 }
 
