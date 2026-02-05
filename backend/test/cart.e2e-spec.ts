@@ -203,12 +203,12 @@ describe('CartController (e2e)', () => {
         where: { homeId: testHomeId },
       });
       const subcategory = await prisma.subcategory.findFirst({
-        where: { categoryId: category.id },
+        where: { categoryId: category!.id },
       });
       const tempProduct = await prisma.product.create({
         data: {
           homeId: testHomeId,
-          subcategoryId: subcategory.id,
+          subcategoryId: subcategory!.id,
           name: 'Temp Product',
           picture: 'temp.jpg',
         },
@@ -249,12 +249,12 @@ describe('CartController (e2e)', () => {
         where: { homeId: testHomeId },
       });
       const subcategory = await prisma.subcategory.findFirst({
-        where: { categoryId: category.id },
+        where: { categoryId: category!.id },
       });
       const product2 = await prisma.product.create({
         data: {
           homeId: testHomeId,
-          subcategoryId: subcategory.id,
+          subcategoryId: subcategory!.id,
           name: 'Product 2',
           picture: 'p2.jpg',
         },
