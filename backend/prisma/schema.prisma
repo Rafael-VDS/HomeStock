@@ -67,7 +67,7 @@ model Subcategory {
   categoryId             Int                     @map("category_id")
   name                   String
   category               Category                @relation(fields: [categoryId], references: [id])
-  subcategoriesProducts  SubcategoryProduct[]
+  products               Product[]
 
   @@map("subcategories")
 }
@@ -76,28 +76,18 @@ model Subcategory {
 model Product {
   id                     Int                  @id @default(autoincrement())
   homeId                 Int                  @map("home_id")
+  subcategoryId          Int                  @map("subcategory_id")
   name                   String
   picture                String
   mass                   Int?
   liquid                 Int?
   home                   Home                 @relation(fields: [homeId], references: [id])
-  subcategoriesProducts  SubcategoryProduct[]
+  subcategory            Subcategory          @relation(fields: [subcategoryId], references: [id])
   productBatches         ProductBatch[]
   cartProducts           CartProduct[]
   recipeProducts         RecipeProduct[]
 
   @@map("products")
-}
-
-model SubcategoryProduct {
-  id             Int          @id @default(autoincrement())
-  subcategoryId  Int          @map("subcategory_id")
-  productId      Int          @map("product_id")
-  subcategory    Subcategory  @relation(fields: [subcategoryId], references: [id])
-  product        Product      @relation(fields: [productId], references: [id])
-
-  @@unique([subcategoryId, productId])
-  @@map("subcategories_products")
 }
 
 // ================= STOCK REEL (unités physiques) =================

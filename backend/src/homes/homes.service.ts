@@ -9,8 +9,42 @@ export class HomesService {
   constructor(private prisma: PrismaService) {}
 
   async create(createHomeDto: CreateHomeDto): Promise<HomeEntity> {
+    // Vérifier que l'utilisateur existe
+    const user = await this.prisma.user.findUnique({
+      where: { id: createHomeDto.userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        `Utilisateur avec l'ID ${createHomeDto.userId} introuvable`,
+      );
+    }
+
+    // Créer la maison avec la permission "owner" automatiquement
     const home = await this.prisma.home.create({
-      data: createHomeDto,
+      data: {
+        name: createHomeDto.name,
+        permissions: {
+          create: {
+            userId: createHomeDto.userId,
+            type: 'owner',
+          },
+        },
+      },
+      include: {
+        permissions: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstname: true,
+                lastname: true,
+                mail: true,
+              },
+            },
+          },
+        },
+      },
     });
     return new HomeEntity(home);
   }
@@ -115,13 +149,9 @@ export class HomesService {
       include: {
         products: {
           include: {
-            subcategoriesProducts: {
+            subcategory: {
               include: {
-                subcategory: {
-                  include: {
-                    category: true,
-                  },
-                },
+                category: true,
               },
             },
           },

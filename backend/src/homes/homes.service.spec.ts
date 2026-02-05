@@ -15,6 +15,9 @@ describe('HomesService', () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   };
 
   beforeEach(async () => {
@@ -41,18 +44,67 @@ describe('HomesService', () => {
   });
 
   describe('create', () => {
-    it('should create a new home', async () => {
-      const createHomeDto = { name: 'Test Home' };
-      const expectedHome = { id: 1, ...createHomeDto };
+    it('should create a new home with owner permission', async () => {
+      const createHomeDto = { name: 'Test Home', userId: 1 };
+      const mockUser = { id: 1, firstname: 'John', lastname: 'Doe', mail: 'john@example.com' };
+      const expectedHome = {
+        id: 1,
+        name: 'Test Home',
+        permissions: [
+          {
+            id: 1,
+            userId: 1,
+            homeId: 1,
+            type: 'owner',
+            user: mockUser,
+          },
+        ],
+      };
 
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockPrismaService.home.create.mockResolvedValue(expectedHome);
 
       const result = await service.create(createHomeDto);
 
-      expect(result).toEqual(expectedHome);
-      expect(prisma.home.create).toHaveBeenCalledWith({
-        data: createHomeDto,
+      expect(result).toBeDefined();
+      expect(prisma.user.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
       });
+      expect(prisma.home.create).toHaveBeenCalledWith({
+        data: {
+          name: 'Test Home',
+          permissions: {
+            create: {
+              userId: 1,
+              type: 'owner',
+            },
+          },
+        },
+        include: {
+          permissions: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstname: true,
+                  lastname: true,
+                  mail: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    });
+
+    it('should throw NotFoundException if user does not exist', async () => {
+      const createHomeDto = { name: 'Test Home', userId: 999 };
+
+      mockPrismaService.user.findUnique.mockResolvedValue(null);
+
+      await expect(service.create(createHomeDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

@@ -1,5 +1,6 @@
-import { IsInt, IsString, IsNotEmpty } from 'class-validator';
+import { IsInt, IsString, IsNotEmpty, IsIn } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { PermissionType, VALID_PERMISSION_TYPES } from '../../common/constants/permission-types';
 
 export class CreatePermissionDto {
   @ApiProperty({
@@ -20,10 +21,13 @@ export class CreatePermissionDto {
 
   @ApiProperty({
     description: 'Type de permission',
-    example: 'admin',
-    enum: ['admin', 'member', 'viewer'],
+    example: PermissionType.READ_WRITE,
+    enum: PermissionType,
   })
   @IsString()
   @IsNotEmpty()
-  type: string;
+  @IsIn(VALID_PERMISSION_TYPES, {
+    message: `Le type de permission doit être l'un des suivants: ${VALID_PERMISSION_TYPES.join(', ')}`,
+  })
+  type: PermissionType;
 }

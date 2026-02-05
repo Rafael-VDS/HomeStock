@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { HomesModule } from './homes/homes.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { CategoriesModule } from './categories/categories.module';
+import { ProductsModule } from './products/products.module';
+import { ProductBatchesModule } from './product-batches/product-batches.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { CategoriesModule } from './categories/categories.module';
     HomesModule,
     PermissionsModule,
     CategoriesModule,
+    ProductsModule,
+    ProductBatchesModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

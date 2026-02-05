@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateHomeDto {
@@ -9,4 +9,12 @@ export class CreateHomeDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @ApiProperty({
+    description: 'ID de l\'utilisateur qui crée la maison (sera owner)',
+    example: 1,
+  })
+  @IsInt()
+  @IsNotEmpty()
+  userId: number;
 }
