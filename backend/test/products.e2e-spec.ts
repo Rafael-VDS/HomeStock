@@ -49,9 +49,6 @@ describe('ProductsController (e2e)', () => {
     // Nettoyer les données de test
     try {
       if (createdProductId) {
-        await prisma.subcategoryProduct.deleteMany({
-          where: { productId: createdProductId },
-        });
         await prisma.product.deleteMany({
           where: { id: createdProductId },
         });
@@ -85,7 +82,7 @@ describe('ProductsController (e2e)', () => {
           name: 'Test Product E2E',
           picture: 'https://example.com/test.jpg',
           mass: 500,
-          subcategoryIds: [testSubcategoryId],
+          subcategoryId: testSubcategoryId,
         })
         .expect(201)
         .then((response) => {
@@ -94,7 +91,8 @@ describe('ProductsController (e2e)', () => {
           expect(response.body.mass).toBe(500);
           expect(response.body.stockCount).toBe(0);
           expect(response.body.needsToBuy).toBe(true);
-          expect(response.body.subcategories).toHaveLength(1);
+          expect(response.body.subcategory).toBeDefined();
+          expect(response.body.subcategory.id).toBe(testSubcategoryId);
           createdProductId = response.body.id;
         });
     });
@@ -170,10 +168,7 @@ describe('ProductsController (e2e)', () => {
           expect(Array.isArray(response.body)).toBe(true);
           expect(response.body.length).toBeGreaterThan(0);
           response.body.forEach((product) => {
-            const hasSubcategory = product.subcategories.some(
-              (sub) => sub.id === testSubcategoryId,
-            );
-            expect(hasSubcategory).toBe(true);
+            expect(product.subcategoryId).toBe(testSubcategoryId);
           });
         });
     });
@@ -223,6 +218,7 @@ describe('ProductsController (e2e)', () => {
       const tempProduct = await prisma.product.create({
         data: {
           homeId: testHomeId,
+          subcategoryId: testSubcategoryId,
           name: 'Temp Product',
           picture: 'temp.jpg',
         },

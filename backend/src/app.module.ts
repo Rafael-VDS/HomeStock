@@ -10,6 +10,7 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { ProductBatchesModule } from './product-batches/product-batches.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ProductBatchesModule } from './product-batches/product-batches.module';
     CategoriesModule,
     ProductsModule,
     ProductBatchesModule,
+    CartModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
