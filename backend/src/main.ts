@@ -19,7 +19,7 @@ async function bootstrap() {
   });
 
   // Préfixe global pour toutes les routes API
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api');
 
   // Pipes globaux pour la validation
   app.useGlobalPipes(
@@ -61,7 +61,7 @@ async function bootstrap() {
   console.log('');
   console.log('🚀 Application is running on: http://localhost:' + port);
   console.log('📚 API Documentation: http://localhost:' + port + '/api/docs');
-  console.log('🔗 API Base URL: http://localhost:' + port + '/api/v1');
+  console.log('🔗 API Base URL: http://localhost:' + port + '/api');
   console.log('');
 }
 bootstrap();

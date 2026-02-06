@@ -32,7 +32,7 @@ export class AuthService {
         lastname: registerDto.lastname,
         mail: registerDto.mail,
         password: hashedPassword,
-        picture: registerDto.picture,
+        picture: registerDto.picture || '/uploads/avatars/default_profil.png',
       },
       select: {
         id: true,

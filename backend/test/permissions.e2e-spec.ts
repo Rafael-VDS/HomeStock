@@ -17,7 +17,7 @@ describe('PermissionsController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix('api/v1');
+    app.setGlobalPrefix('api');
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -36,7 +36,7 @@ describe('PermissionsController (e2e)', () => {
 
     // Créer un utilisateur de test et obtenir le token
     const registerResponse = await request(app.getHttpServer())
-      .post('/api/v1/auth/register')
+      .post('/api/auth/register')
       .send({
         email: 'test@test.com',
         password: 'Password123',
@@ -71,10 +71,10 @@ describe('PermissionsController (e2e)', () => {
     await app.close();
   });
 
-  describe('POST /api/v1/permissions', () => {
+  describe('POST /api/permissions', () => {
     it('should create a new permission', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/permissions')
+        .post('/api/permissions')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: userId,
@@ -92,7 +92,7 @@ describe('PermissionsController (e2e)', () => {
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/permissions')
+        .post('/api/permissions')
         .send({
           userId: userId,
           homeId: homeId,
@@ -103,7 +103,7 @@ describe('PermissionsController (e2e)', () => {
 
     it('should return 409 when permission already exists', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/permissions')
+        .post('/api/permissions')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: userId,
@@ -115,7 +115,7 @@ describe('PermissionsController (e2e)', () => {
 
     it('should return 404 when user not found', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/permissions')
+        .post('/api/permissions')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: 999999,
@@ -127,7 +127,7 @@ describe('PermissionsController (e2e)', () => {
 
     it('should return 404 when home not found', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/permissions')
+        .post('/api/permissions')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: userId,
@@ -138,10 +138,10 @@ describe('PermissionsController (e2e)', () => {
     });
   });
 
-  describe('GET /api/v1/permissions/home/:homeId', () => {
+  describe('GET /api/permissions/home/:homeId', () => {
     it('should return permissions for a home', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/permissions/home/${homeId}`)
+        .get(`/api/permissions/home/${homeId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -154,22 +154,22 @@ describe('PermissionsController (e2e)', () => {
 
     it('should return 404 for non-existent home', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/permissions/home/999999')
+        .get('/api/permissions/home/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/permissions/home/${homeId}`)
+        .get(`/api/permissions/home/${homeId}`)
         .expect(401);
     });
   });
 
-  describe('GET /api/v1/permissions/user/:userId', () => {
+  describe('GET /api/permissions/user/:userId', () => {
     it('should return permissions for a user', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/permissions/user/${userId}`)
+        .get(`/api/permissions/user/${userId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -182,19 +182,19 @@ describe('PermissionsController (e2e)', () => {
 
     it('should return 404 for non-existent user', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/permissions/user/999999')
+        .get('/api/permissions/user/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/permissions/user/${userId}`)
+        .get(`/api/permissions/user/${userId}`)
         .expect(401);
     });
   });
 
-  describe('GET /api/v1/permissions/:id', () => {
+  describe('GET /api/permissions/:id', () => {
     let permissionId: number;
 
     beforeAll(async () => {
@@ -211,7 +211,7 @@ describe('PermissionsController (e2e)', () => {
 
     it('should return a permission by id', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/permissions/${permissionId}`)
+        .get(`/api/permissions/${permissionId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -223,19 +223,19 @@ describe('PermissionsController (e2e)', () => {
 
     it('should return 404 for non-existent permission', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/permissions/999999')
+        .get('/api/permissions/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/permissions/${permissionId}`)
+        .get(`/api/permissions/${permissionId}`)
         .expect(401);
     });
   });
 
-  describe('PATCH /api/v1/permissions/:id', () => {
+  describe('PATCH /api/permissions/:id', () => {
     let permissionId: number;
 
     beforeAll(async () => {
@@ -252,7 +252,7 @@ describe('PermissionsController (e2e)', () => {
 
     it('should update a permission type', () => {
       return request(app.getHttpServer())
-        .patch(`/api/v1/permissions/${permissionId}`)
+        .patch(`/api/permissions/${permissionId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           type: 'member',
@@ -266,7 +266,7 @@ describe('PermissionsController (e2e)', () => {
 
     it('should return 404 for non-existent permission', () => {
       return request(app.getHttpServer())
-        .patch('/api/v1/permissions/999999')
+        .patch('/api/permissions/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           type: 'viewer',
@@ -276,7 +276,7 @@ describe('PermissionsController (e2e)', () => {
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .patch(`/api/v1/permissions/${permissionId}`)
+        .patch(`/api/permissions/${permissionId}`)
         .send({
           type: 'viewer',
         })
@@ -284,7 +284,7 @@ describe('PermissionsController (e2e)', () => {
     });
   });
 
-  describe('DELETE /api/v1/permissions/:id', () => {
+  describe('DELETE /api/permissions/:id', () => {
     let permissionId: number;
 
     beforeEach(async () => {
@@ -311,7 +311,7 @@ describe('PermissionsController (e2e)', () => {
 
     it('should delete a permission', () => {
       return request(app.getHttpServer())
-        .delete(`/api/v1/permissions/${permissionId}`)
+        .delete(`/api/permissions/${permissionId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -321,14 +321,14 @@ describe('PermissionsController (e2e)', () => {
 
     it('should return 404 for non-existent permission', () => {
       return request(app.getHttpServer())
-        .delete('/api/v1/permissions/999999')
+        .delete('/api/permissions/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .delete(`/api/v1/permissions/${permissionId}`)
+        .delete(`/api/permissions/${permissionId}`)
         .expect(401);
     });
   });

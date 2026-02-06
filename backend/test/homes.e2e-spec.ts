@@ -15,7 +15,7 @@ describe('HomesController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix('api/v1');
+    app.setGlobalPrefix('api');
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -33,7 +33,7 @@ describe('HomesController (e2e)', () => {
 
     // Créer un utilisateur de test et obtenir le token
     const registerResponse = await request(app.getHttpServer())
-      .post('/api/v1/auth/register')
+      .post('/api/auth/register')
       .send({
         email: 'test@test.com',
         password: 'Password123',
@@ -50,10 +50,10 @@ describe('HomesController (e2e)', () => {
     await app.close();
   });
 
-  describe('POST /api/v1/homes', () => {
+  describe('POST /api/homes', () => {
     it('should create a new home', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/homes')
+        .post('/api/homes')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: 'Maison Test',
@@ -67,7 +67,7 @@ describe('HomesController (e2e)', () => {
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/homes')
+        .post('/api/homes')
         .send({
           name: 'Maison Test',
         })
@@ -76,7 +76,7 @@ describe('HomesController (e2e)', () => {
 
     it('should return 400 with invalid data', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/homes')
+        .post('/api/homes')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: '',
@@ -85,7 +85,7 @@ describe('HomesController (e2e)', () => {
     });
   });
 
-  describe('GET /api/v1/homes', () => {
+  describe('GET /api/homes', () => {
     beforeAll(async () => {
       await prisma.home.deleteMany();
       await prisma.home.createMany({
@@ -98,7 +98,7 @@ describe('HomesController (e2e)', () => {
 
     it('should return all homes', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/homes')
+        .get('/api/homes')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -109,12 +109,12 @@ describe('HomesController (e2e)', () => {
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/homes')
+        .get('/api/homes')
         .expect(401);
     });
   });
 
-  describe('GET /api/v1/homes/:id', () => {
+  describe('GET /api/homes/:id', () => {
     let homeId: number;
 
     beforeAll(async () => {
@@ -126,7 +126,7 @@ describe('HomesController (e2e)', () => {
 
     it('should return a home by id', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/homes/${homeId}`)
+        .get(`/api/homes/${homeId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -137,19 +137,19 @@ describe('HomesController (e2e)', () => {
 
     it('should return 404 for non-existent home', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/homes/999999')
+        .get('/api/homes/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/homes/${homeId}`)
+        .get(`/api/homes/${homeId}`)
         .expect(401);
     });
   });
 
-  describe('PATCH /api/v1/homes/:id', () => {
+  describe('PATCH /api/homes/:id', () => {
     let homeId: number;
 
     beforeAll(async () => {
@@ -161,7 +161,7 @@ describe('HomesController (e2e)', () => {
 
     it('should update a home', () => {
       return request(app.getHttpServer())
-        .patch(`/api/v1/homes/${homeId}`)
+        .patch(`/api/homes/${homeId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: 'Maison Modifiée',
@@ -175,7 +175,7 @@ describe('HomesController (e2e)', () => {
 
     it('should return 404 for non-existent home', () => {
       return request(app.getHttpServer())
-        .patch('/api/v1/homes/999999')
+        .patch('/api/homes/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: 'Test',
@@ -185,7 +185,7 @@ describe('HomesController (e2e)', () => {
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .patch(`/api/v1/homes/${homeId}`)
+        .patch(`/api/homes/${homeId}`)
         .send({
           name: 'Test',
         })
@@ -193,7 +193,7 @@ describe('HomesController (e2e)', () => {
     });
   });
 
-  describe('DELETE /api/v1/homes/:id', () => {
+  describe('DELETE /api/homes/:id', () => {
     let homeId: number;
 
     beforeEach(async () => {
@@ -205,7 +205,7 @@ describe('HomesController (e2e)', () => {
 
     it('should delete a home', () => {
       return request(app.getHttpServer())
-        .delete(`/api/v1/homes/${homeId}`)
+        .delete(`/api/homes/${homeId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -215,19 +215,19 @@ describe('HomesController (e2e)', () => {
 
     it('should return 404 for non-existent home', () => {
       return request(app.getHttpServer())
-        .delete('/api/v1/homes/999999')
+        .delete('/api/homes/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .delete(`/api/v1/homes/${homeId}`)
+        .delete(`/api/homes/${homeId}`)
         .expect(401);
     });
   });
 
-  describe('GET /api/v1/homes/:id/users', () => {
+  describe('GET /api/homes/:id/users', () => {
     let homeId: number;
     let userId: number;
 
@@ -258,7 +258,7 @@ describe('HomesController (e2e)', () => {
 
     it('should return users of a home', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/homes/${homeId}/users`)
+        .get(`/api/homes/${homeId}/users`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -270,13 +270,13 @@ describe('HomesController (e2e)', () => {
 
     it('should return 404 for non-existent home', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/homes/999999/users')
+        .get('/api/homes/999999/users')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
   });
 
-  describe('GET /api/v1/homes/:id/categories', () => {
+  describe('GET /api/homes/:id/categories', () => {
     let homeId: number;
 
     beforeAll(async () => {
@@ -288,7 +288,7 @@ describe('HomesController (e2e)', () => {
 
     it('should return categories of a home', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/homes/${homeId}/categories`)
+        .get(`/api/homes/${homeId}/categories`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -298,13 +298,13 @@ describe('HomesController (e2e)', () => {
 
     it('should return 404 for non-existent home', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/homes/999999/categories')
+        .get('/api/homes/999999/categories')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
   });
 
-  describe('GET /api/v1/homes/:id/products', () => {
+  describe('GET /api/homes/:id/products', () => {
     let homeId: number;
 
     beforeAll(async () => {
@@ -316,7 +316,7 @@ describe('HomesController (e2e)', () => {
 
     it('should return products of a home', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/homes/${homeId}/products`)
+        .get(`/api/homes/${homeId}/products`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -326,7 +326,7 @@ describe('HomesController (e2e)', () => {
 
     it('should return 404 for non-existent home', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/homes/999999/products')
+        .get('/api/homes/999999/products')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });

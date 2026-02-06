@@ -16,7 +16,7 @@ describe('UsersController (e2e)', () => {
     app = moduleFixture.createNestApplication();
 
     // Appliquer la même config que main.ts
-    app.setGlobalPrefix('api/v1');
+    app.setGlobalPrefix('api');
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -43,10 +43,10 @@ describe('UsersController (e2e)', () => {
     await app.close();
   });
 
-  describe('/api/v1/users (POST)', () => {
+  describe('/api/users (POST)', () => {
     it('should create a new user', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/users')
+        .post('/api/users')
         .send({
           firstname: 'John',
           lastname: 'Doe',
@@ -67,7 +67,7 @@ describe('UsersController (e2e)', () => {
 
     it('should fail with invalid email', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/users')
+        .post('/api/users')
         .send({
           firstname: 'Test',
           lastname: 'User',
@@ -82,7 +82,7 @@ describe('UsersController (e2e)', () => {
 
     it('should fail with short password', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/users')
+        .post('/api/users')
         .send({
           firstname: 'Test',
           lastname: 'User',
@@ -100,7 +100,7 @@ describe('UsersController (e2e)', () => {
     it('should fail with duplicate email', async () => {
       // Créer un premier utilisateur
       await request(app.getHttpServer())
-        .post('/api/v1/users')
+        .post('/api/users')
         .send({
           firstname: 'Jane',
           lastname: 'Smith',
@@ -111,7 +111,7 @@ describe('UsersController (e2e)', () => {
 
       // Essayer de créer un utilisateur avec le même email
       return request(app.getHttpServer())
-        .post('/api/v1/users')
+        .post('/api/users')
         .send({
           firstname: 'Another',
           lastname: 'User',
@@ -128,7 +128,7 @@ describe('UsersController (e2e)', () => {
 
     it('should fail with missing required fields', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/users')
+        .post('/api/users')
         .send({
           firstname: 'Test',
           // Manque lastname, mail, password
@@ -137,10 +137,10 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  describe('/api/v1/users (GET)', () => {
+  describe('/api/users (GET)', () => {
     it('should return all users', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/users')
+        .get('/api/users')
         .expect(200);
 
       expect(Array.isArray(response.body)).toBe(true);
@@ -151,11 +151,11 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  describe('/api/v1/users/:id (GET)', () => {
+  describe('/api/users/:id (GET)', () => {
     it('should return a user by id', async () => {
       // Créer un utilisateur
       const createResponse = await request(app.getHttpServer())
-        .post('/api/v1/users')
+        .post('/api/users')
         .send({
           firstname: 'Get',
           lastname: 'Test',
@@ -167,7 +167,7 @@ describe('UsersController (e2e)', () => {
 
       // Récupérer l'utilisateur
       return request(app.getHttpServer())
-        .get(`/api/v1/users/${userId}`)
+        .get(`/api/users/${userId}`)
         .expect(200)
         .expect((res) => {
           expect(res.body.id).toBe(userId);
@@ -180,7 +180,7 @@ describe('UsersController (e2e)', () => {
 
     it('should return 404 for non-existent user', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/users/99999')
+        .get('/api/users/99999')
         .expect(404)
         .expect((res) => {
           expect(res.body.message).toBe('Utilisateur #99999 introuvable');
@@ -188,11 +188,11 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  describe('/api/v1/users/search (GET)', () => {
+  describe('/api/users/search (GET)', () => {
     it('should find a user by email', async () => {
       // Créer un utilisateur
       await request(app.getHttpServer())
-        .post('/api/v1/users')
+        .post('/api/users')
         .send({
           firstname: 'Search',
           lastname: 'Test',
@@ -202,7 +202,7 @@ describe('UsersController (e2e)', () => {
 
       // Rechercher par email
       return request(app.getHttpServer())
-        .get('/api/v1/users/search')
+        .get('/api/users/search')
         .query({ mail: 'search.test@example.com' })
         .expect(200)
         .expect((res) => {
@@ -213,17 +213,17 @@ describe('UsersController (e2e)', () => {
 
     it('should return 404 for non-existent email', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/users/search')
+        .get('/api/users/search')
         .query({ mail: 'notfound@example.com' })
         .expect(404);
     });
   });
 
-  describe('/api/v1/users/:id (PATCH)', () => {
+  describe('/api/users/:id (PATCH)', () => {
     it('should update a user', async () => {
       // Créer un utilisateur
       const createResponse = await request(app.getHttpServer())
-        .post('/api/v1/users')
+        .post('/api/users')
         .send({
           firstname: 'Update',
           lastname: 'Test',
@@ -235,7 +235,7 @@ describe('UsersController (e2e)', () => {
 
       // Mettre à jour
       return request(app.getHttpServer())
-        .patch(`/api/v1/users/${userId}`)
+        .patch(`/api/users/${userId}`)
         .send({
           firstname: 'Updated',
           picture: 'https://example.com/new-avatar.jpg',
@@ -251,14 +251,14 @@ describe('UsersController (e2e)', () => {
 
     it('should return 404 for non-existent user', () => {
       return request(app.getHttpServer())
-        .patch('/api/v1/users/99999')
+        .patch('/api/users/99999')
         .send({ firstname: 'Test' })
         .expect(404);
     });
 
     it('should fail when updating to existing email', async () => {
       // Créer deux utilisateurs
-      await request(app.getHttpServer()).post('/api/v1/users').send({
+      await request(app.getHttpServer()).post('/api/users').send({
         firstname: 'User1',
         lastname: 'Test',
         mail: 'user1@example.com',
@@ -266,7 +266,7 @@ describe('UsersController (e2e)', () => {
       });
 
       const user2Response = await request(app.getHttpServer())
-        .post('/api/v1/users')
+        .post('/api/users')
         .send({
           firstname: 'User2',
           lastname: 'Test',
@@ -276,7 +276,7 @@ describe('UsersController (e2e)', () => {
 
       // Essayer de mettre à jour user2 avec l'email de user1
       return request(app.getHttpServer())
-        .patch(`/api/v1/users/${user2Response.body.id}`)
+        .patch(`/api/users/${user2Response.body.id}`)
         .send({ mail: 'user1@example.com' })
         .expect(409)
         .expect((res) => {
@@ -285,11 +285,11 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  describe('/api/v1/users/:id/permissions (GET)', () => {
+  describe('/api/users/:id/permissions (GET)', () => {
     it('should return empty permissions array for new user', async () => {
       // Créer un utilisateur
       const createResponse = await request(app.getHttpServer())
-        .post('/api/v1/users')
+        .post('/api/users')
         .send({
           firstname: 'Permission',
           lastname: 'Test',
@@ -301,7 +301,7 @@ describe('UsersController (e2e)', () => {
 
       // Récupérer les permissions
       return request(app.getHttpServer())
-        .get(`/api/v1/users/${userId}/permissions`)
+        .get(`/api/users/${userId}/permissions`)
         .expect(200)
         .expect((res) => {
           expect(Array.isArray(res.body)).toBe(true);
@@ -311,16 +311,16 @@ describe('UsersController (e2e)', () => {
 
     it('should return 404 for non-existent user', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/users/99999/permissions')
+        .get('/api/users/99999/permissions')
         .expect(404);
     });
   });
 
-  describe('/api/v1/users/:id (DELETE)', () => {
+  describe('/api/users/:id (DELETE)', () => {
     it('should delete a user', async () => {
       // Créer un utilisateur
       const createResponse = await request(app.getHttpServer())
-        .post('/api/v1/users')
+        .post('/api/users')
         .send({
           firstname: 'Delete',
           lastname: 'Test',
@@ -332,7 +332,7 @@ describe('UsersController (e2e)', () => {
 
       // Supprimer
       await request(app.getHttpServer())
-        .delete(`/api/v1/users/${userId}`)
+        .delete(`/api/users/${userId}`)
         .expect(200)
         .expect((res) => {
           expect(res.body.message).toBe(
@@ -342,13 +342,13 @@ describe('UsersController (e2e)', () => {
 
       // Vérifier que l'utilisateur n'existe plus
       return request(app.getHttpServer())
-        .get(`/api/v1/users/${userId}`)
+        .get(`/api/users/${userId}`)
         .expect(404);
     });
 
     it('should return 404 for non-existent user', () => {
       return request(app.getHttpServer())
-        .delete('/api/v1/users/99999')
+        .delete('/api/users/99999')
         .expect(404);
     });
   });

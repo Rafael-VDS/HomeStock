@@ -5,7 +5,7 @@
 ## 📋 Prérequis
 
 - Serveur lancé : `npm run start:dev`
-- Base URL : `http://localhost:3000/api/v1`
+- Base URL : `http://localhost:3000/api`
 - Documentation Swagger : `http://localhost:3000/api/docs`
 
 ---
@@ -16,7 +16,7 @@
 
 ### Request
 ```bash
-POST http://localhost:3000/api/v1/auth/register
+POST http://localhost:3000/api/auth/register
 Content-Type: application/json
 
 {
@@ -30,7 +30,7 @@ Content-Type: application/json
 
 ### cURL
 ```bash
-curl -X POST http://localhost:3000/api/v1/auth/register \
+curl -X POST http://localhost:3000/api/auth/register \
   -H "Content-Type: application/json" \
   -d "{\"firstname\":\"Marie\",\"lastname\":\"Dubois\",\"mail\":\"marie.dubois@example.com\",\"password\":\"SecurePass123!\",\"picture\":\"/uploads/avatars/marie-dubois.jpg\"}"
 ```
@@ -57,7 +57,7 @@ curl -X POST http://localhost:3000/api/v1/auth/register \
 
 ### Request
 ```bash
-POST http://localhost:3000/api/v1/auth/login
+POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
@@ -68,7 +68,7 @@ Content-Type: application/json
 
 ### cURL
 ```bash
-curl -X POST http://localhost:3000/api/v1/auth/login \
+curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
   -d "{\"mail\":\"alice.martin@example.com\",\"password\":\"Password123\"}"
 ```
@@ -97,13 +97,13 @@ curl -X POST http://localhost:3000/api/v1/auth/login \
 
 ### Request
 ```bash
-GET http://localhost:3000/api/v1/auth/profile
+GET http://localhost:3000/api/auth/profile
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 ### cURL
 ```bash
-curl -X GET http://localhost:3000/api/v1/auth/profile \
+curl -X GET http://localhost:3000/api/auth/profile \
   -H "Authorization: Bearer VOTRE_TOKEN_ICI"
 ```
 
@@ -152,7 +152,7 @@ curl -X GET http://localhost:3000/api/v1/auth/profile \
 
 ### Request
 ```bash
-POST http://localhost:3000/api/v1/users
+POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
@@ -166,7 +166,7 @@ Content-Type: application/json
 
 ### cURL
 ```bash
-curl -X POST http://localhost:3000/api/v1/users \
+curl -X POST http://localhost:3000/api/users \
   -H "Content-Type: application/json" \
   -d "{\"firstname\":\"John\",\"lastname\":\"Doe\",\"mail\":\"john.doe@example.com\",\"password\":\"SecurePass123!\",\"picture\":\"https://randomuser.me/api/portraits/men/1.jpg\"}"
 ```
@@ -188,7 +188,7 @@ curl -X POST http://localhost:3000/api/v1/users \
 
 ### Request
 ```bash
-POST http://localhost:3000/api/v1/users
+POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
@@ -202,7 +202,7 @@ Content-Type: application/json
 
 ### cURL
 ```bash
-curl -X POST http://localhost:3000/api/v1/users \
+curl -X POST http://localhost:3000/api/users \
   -H "Content-Type: application/json" \
   -d "{\"firstname\":\"Jane\",\"lastname\":\"Smith\",\"mail\":\"jane.smith@example.com\",\"password\":\"Password456!\",\"picture\":\"https://randomuser.me/api/portraits/women/2.jpg\"}"
 ```
@@ -213,12 +213,12 @@ curl -X POST http://localhost:3000/api/v1/users \
 
 ### Request
 ```bash
-GET http://localhost:3000/api/v1/users
+GET http://localhost:3000/api/users
 ```
 
 ### cURL
 ```bash
-curl http://localhost:3000/api/v1/users
+curl http://localhost:3000/api/users
 ```
 
 ### Response attendue (200 OK)
@@ -247,12 +247,12 @@ curl http://localhost:3000/api/v1/users
 
 ### Request
 ```bash
-GET http://localhost:3000/api/v1/users/1
+GET http://localhost:3000/api/users/1
 ```
 
 ### cURL
 ```bash
-curl http://localhost:3000/api/v1/users/1
+curl http://localhost:3000/api/users/1
 ```
 
 ### Response attendue (200 OK)
@@ -272,12 +272,12 @@ curl http://localhost:3000/api/v1/users/1
 
 ### Request
 ```bash
-GET http://localhost:3000/api/v1/users/search?mail=john.doe@example.com
+GET http://localhost:3000/api/users/search?mail=john.doe@example.com
 ```
 
 ### cURL
 ```bash
-curl "http://localhost:3000/api/v1/users/search?mail=john.doe@example.com"
+curl "http://localhost:3000/api/users/search?mail=john.doe@example.com"
 ```
 
 ### Response attendue (200 OK)
@@ -297,7 +297,7 @@ curl "http://localhost:3000/api/v1/users/search?mail=john.doe@example.com"
 
 ### Request
 ```bash
-PATCH http://localhost:3000/api/v1/users/1
+PATCH http://localhost:3000/api/users/1
 Content-Type: application/json
 
 {
@@ -308,7 +308,7 @@ Content-Type: application/json
 
 ### cURL
 ```bash
-curl -X PATCH http://localhost:3000/api/v1/users/1 \
+curl -X PATCH http://localhost:3000/api/users/1 \
   -H "Content-Type: application/json" \
   -d "{\"firstname\":\"Johnny\",\"picture\":\"https://randomuser.me/api/portraits/men/10.jpg\"}"
 ```
@@ -330,12 +330,12 @@ curl -X PATCH http://localhost:3000/api/v1/users/1 \
 
 ### Request
 ```bash
-GET http://localhost:3000/api/v1/users/1/permissions
+GET http://localhost:3000/api/users/1/permissions
 ```
 
 ### cURL
 ```bash
-curl http://localhost:3000/api/v1/users/1/permissions
+curl http://localhost:3000/api/users/1/permissions
 ```
 
 ### Response attendue (200 OK)
@@ -350,12 +350,12 @@ curl http://localhost:3000/api/v1/users/1/permissions
 
 ### Request
 ```bash
-DELETE http://localhost:3000/api/v1/users/2
+DELETE http://localhost:3000/api/users/2
 ```
 
 ### cURL
 ```bash
-curl -X DELETE http://localhost:3000/api/v1/users/2
+curl -X DELETE http://localhost:3000/api/users/2
 ```
 
 ### Response attendue (200 OK)
@@ -371,7 +371,7 @@ curl -X DELETE http://localhost:3000/api/v1/users/2
 
 ### Email déjà existant (409 Conflict)
 ```bash
-POST http://localhost:3000/api/v1/users
+POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
@@ -392,7 +392,7 @@ Content-Type: application/json
 
 ### Utilisateur introuvable (404 Not Found)
 ```bash
-GET http://localhost:3000/api/v1/users/999
+GET http://localhost:3000/api/users/999
 ```
 
 **Response :**
@@ -405,7 +405,7 @@ GET http://localhost:3000/api/v1/users/999
 
 ### Validation échouée (400 Bad Request)
 ```bash
-POST http://localhost:3000/api/v1/users
+POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
@@ -436,7 +436,7 @@ Si vous avez l'extension **REST Client** installée, créez un fichier `api.http
 
 ```http
 ### Variables
-@baseUrl = http://localhost:3000/api/v1
+@baseUrl = http://localhost:3000/api
 @contentType = application/json
 
 ### 1. Créer un utilisateur

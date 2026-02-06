@@ -16,7 +16,7 @@ describe('CategoriesController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix('api/v1');
+    app.setGlobalPrefix('api');
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -36,7 +36,7 @@ describe('CategoriesController (e2e)', () => {
 
     // Créer un utilisateur de test et obtenir le token
     const registerResponse = await request(app.getHttpServer())
-      .post('/api/v1/auth/register')
+      .post('/api/auth/register')
       .send({
         email: 'test@test.com',
         password: 'Password123',
@@ -63,10 +63,10 @@ describe('CategoriesController (e2e)', () => {
 
   // ==================== CATEGORIES TESTS ====================
 
-  describe('POST /api/v1/categories', () => {
+  describe('POST /api/categories', () => {
     it('should create a new category with picture', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/categories')
+        .post('/api/categories')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           homeId: homeId,
@@ -84,7 +84,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/categories')
+        .post('/api/categories')
         .send({
           homeId: homeId,
           name: 'Test',
@@ -95,7 +95,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 404 when home not found', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/categories')
+        .post('/api/categories')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           homeId: 999999,
@@ -107,7 +107,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 400 without picture', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/categories')
+        .post('/api/categories')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           homeId: homeId,
@@ -117,7 +117,7 @@ describe('CategoriesController (e2e)', () => {
     });
   });
 
-  describe('GET /api/v1/categories/home/:homeId', () => {
+  describe('GET /api/categories/home/:homeId', () => {
     beforeAll(async () => {
       await prisma.category.createMany({
         data: [
@@ -137,7 +137,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return categories for a home with subcategories', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/categories/home/${homeId}`)
+        .get(`/api/categories/home/${homeId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -150,19 +150,19 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 404 for non-existent home', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/categories/home/999999')
+        .get('/api/categories/home/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/categories/home/${homeId}`)
+        .get(`/api/categories/home/${homeId}`)
         .expect(401);
     });
   });
 
-  describe('GET /api/v1/categories/:id', () => {
+  describe('GET /api/categories/:id', () => {
     let categoryId: number;
 
     beforeAll(async () => {
@@ -178,7 +178,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return a category by id with picture', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/categories/${categoryId}`)
+        .get(`/api/categories/${categoryId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -191,19 +191,19 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 404 for non-existent category', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/categories/999999')
+        .get('/api/categories/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/categories/${categoryId}`)
+        .get(`/api/categories/${categoryId}`)
         .expect(401);
     });
   });
 
-  describe('PATCH /api/v1/categories/:id', () => {
+  describe('PATCH /api/categories/:id', () => {
     let categoryId: number;
 
     beforeAll(async () => {
@@ -219,7 +219,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should update a category name and picture', () => {
       return request(app.getHttpServer())
-        .patch(`/api/v1/categories/${categoryId}`)
+        .patch(`/api/categories/${categoryId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: 'Snacks Salés',
@@ -235,7 +235,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 404 for non-existent category', () => {
       return request(app.getHttpServer())
-        .patch('/api/v1/categories/999999')
+        .patch('/api/categories/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: 'Test',
@@ -245,7 +245,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .patch(`/api/v1/categories/${categoryId}`)
+        .patch(`/api/categories/${categoryId}`)
         .send({
           name: 'Test',
         })
@@ -253,7 +253,7 @@ describe('CategoriesController (e2e)', () => {
     });
   });
 
-  describe('DELETE /api/v1/categories/:id', () => {
+  describe('DELETE /api/categories/:id', () => {
     let categoryId: number;
 
     beforeEach(async () => {
@@ -269,7 +269,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should delete a category', () => {
       return request(app.getHttpServer())
-        .delete(`/api/v1/categories/${categoryId}`)
+        .delete(`/api/categories/${categoryId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -279,21 +279,21 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 404 for non-existent category', () => {
       return request(app.getHttpServer())
-        .delete('/api/v1/categories/999999')
+        .delete('/api/categories/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .delete(`/api/v1/categories/${categoryId}`)
+        .delete(`/api/categories/${categoryId}`)
         .expect(401);
     });
   });
 
   // ==================== SUBCATEGORIES TESTS ====================
 
-  describe('POST /api/v1/subcategories', () => {
+  describe('POST /api/subcategories', () => {
     let categoryId: number;
 
     beforeAll(async () => {
@@ -309,7 +309,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should create a new subcategory without picture', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/subcategories')
+        .post('/api/subcategories')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           categoryId: categoryId,
@@ -326,7 +326,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/subcategories')
+        .post('/api/subcategories')
         .send({
           categoryId: categoryId,
           name: 'Test',
@@ -336,7 +336,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 404 when category not found', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/subcategories')
+        .post('/api/subcategories')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           categoryId: 999999,
@@ -346,7 +346,7 @@ describe('CategoriesController (e2e)', () => {
     });
   });
 
-  describe('GET /api/v1/subcategories/category/:categoryId', () => {
+  describe('GET /api/subcategories/category/:categoryId', () => {
     let categoryId: number;
 
     beforeAll(async () => {
@@ -369,7 +369,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return subcategories for a category', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/subcategories/category/${categoryId}`)
+        .get(`/api/subcategories/category/${categoryId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -381,19 +381,19 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 404 for non-existent category', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/subcategories/category/999999')
+        .get('/api/subcategories/category/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/subcategories/category/${categoryId}`)
+        .get(`/api/subcategories/category/${categoryId}`)
         .expect(401);
     });
   });
 
-  describe('GET /api/v1/subcategories/:id', () => {
+  describe('GET /api/subcategories/:id', () => {
     let subcategoryId: number;
 
     beforeAll(async () => {
@@ -416,7 +416,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return a subcategory by id without picture', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/subcategories/${subcategoryId}`)
+        .get(`/api/subcategories/${subcategoryId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -429,19 +429,19 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 404 for non-existent subcategory', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/subcategories/999999')
+        .get('/api/subcategories/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .get(`/api/v1/subcategories/${subcategoryId}`)
+        .get(`/api/subcategories/${subcategoryId}`)
         .expect(401);
     });
   });
 
-  describe('PATCH /api/v1/subcategories/:id', () => {
+  describe('PATCH /api/subcategories/:id', () => {
     let subcategoryId: number;
 
     beforeAll(async () => {
@@ -464,7 +464,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should update a subcategory name', () => {
       return request(app.getHttpServer())
-        .patch(`/api/v1/subcategories/${subcategoryId}`)
+        .patch(`/api/subcategories/${subcategoryId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: 'Spaghetti Complets',
@@ -478,7 +478,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 404 for non-existent subcategory', () => {
       return request(app.getHttpServer())
-        .patch('/api/v1/subcategories/999999')
+        .patch('/api/subcategories/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: 'Test',
@@ -488,7 +488,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .patch(`/api/v1/subcategories/${subcategoryId}`)
+        .patch(`/api/subcategories/${subcategoryId}`)
         .send({
           name: 'Test',
         })
@@ -496,7 +496,7 @@ describe('CategoriesController (e2e)', () => {
     });
   });
 
-  describe('DELETE /api/v1/subcategories/:id', () => {
+  describe('DELETE /api/subcategories/:id', () => {
     let subcategoryId: number;
 
     beforeEach(async () => {
@@ -519,7 +519,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should delete a subcategory', () => {
       return request(app.getHttpServer())
-        .delete(`/api/v1/subcategories/${subcategoryId}`)
+        .delete(`/api/subcategories/${subcategoryId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .then((response) => {
@@ -529,14 +529,14 @@ describe('CategoriesController (e2e)', () => {
 
     it('should return 404 for non-existent subcategory', () => {
       return request(app.getHttpServer())
-        .delete('/api/v1/subcategories/999999')
+        .delete('/api/subcategories/999999')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });
 
     it('should return 401 without authentication', () => {
       return request(app.getHttpServer())
-        .delete(`/api/v1/subcategories/${subcategoryId}`)
+        .delete(`/api/subcategories/${subcategoryId}`)
         .expect(401);
     });
   });
