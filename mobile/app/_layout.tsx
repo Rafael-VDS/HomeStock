@@ -39,15 +39,15 @@ export default function RootLayout() {
           options={{ title: 'Inscription' }} 
         />
         <Stack.Screen 
-          name="pages/home" 
+          name="pages/stock" 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
-          name="pages/achats" 
+          name="pages/cart" 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
-          name="pages/recettes" 
+          name="pages/recipe" 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
@@ -55,15 +55,15 @@ export default function RootLayout() {
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
-          name="pages/suivi" 
+          name="pages/home" 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
-          name="pages/stats" 
+          name="pages/select-home" 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
-          name="pages/carnet" 
+          name="pages/create-home" 
           options={{ headerShown: false }} 
         />
       </Stack>

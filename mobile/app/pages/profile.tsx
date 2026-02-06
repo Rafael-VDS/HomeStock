@@ -2,25 +2,40 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
   Alert,
+  TextInput,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
 import NavBar from '../../components/NavBar';
-
-const API_URL = 'http://192.168.1.50:3000';
+import { authAPI } from '../../services/api';
+import { styles } from '../../styles/profile.styles';
+import { URL } from '../../services/api';
 
 export default function ProfileScreen() {
   const { user, loading, logout, loadUser } = useAuth();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedFirstname, setEditedFirstname] = useState('');
+  const [editedLastname, setEditedLastname] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  
+  // Modal changement de mot de passe
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -39,8 +54,121 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleLogout = async () => {
-    Alert.alert('Déconnexion', 'Êtes-vous sûr de vouloir vous déconnecter ?', [
+  const handleEditProfile = () => {
+    setEditedFirstname(user?.firstname || '');
+    setEditedLastname(user?.lastname || '');
+    setSelectedImage(null);
+    setIsEditing(true);
+  };
+
+  const handleSelectImage = async () => {
+    if (!isEditing) return;
+
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission requise', 'Nous avons besoin d\'accéder à vos photos');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setSelectedImage(result.assets[0].uri);
+    }
+  };
+
+  const handleChangePassword = () => {
+    setPasswordModalVisible(true);
+  };
+
+  const handleSubmitPasswordChange = async () => {
+    if (!newPassword || !confirmPassword) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 8 caractères');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      await authAPI.changePassword(user!.id, { password: newPassword });
+      setPasswordModalVisible(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      Alert.alert('Succès', 'Mot de passe modifié avec succès');
+    } catch (error: any) {
+      Alert.alert('Erreur', error.response?.data?.message || 'Impossible de changer le mot de passe');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editedFirstname.trim() || !editedLastname.trim()) {
+      Alert.alert('Erreur', 'Le prénom et le nom ne peuvent pas être vides');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Mise à jour du profil (nom et prénom)
+      await authAPI.updateProfile(user!.id, {
+        firstname: editedFirstname,
+        lastname: editedLastname,
+      });
+
+      // Upload de l'avatar si une image a été sélectionnée
+      if (selectedImage) {
+        const formData = new FormData();
+        const filename = selectedImage.split('/').pop() || 'avatar.jpg';
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+        formData.append('file', {
+          uri: selectedImage,
+          name: filename,
+          type,
+        } as any);
+
+        await authAPI.updateAvatar(user!.id, formData);
+      }
+
+      await loadUser();
+      setIsEditing(false);
+      setSelectedImage(null);
+      Alert.alert('Succès', 'Profil mis à jour avec succès');
+    } catch (error: any) {
+      Alert.alert('Erreur', error.response?.data?.message || 'Impossible de mettre à jour le profil');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setSelectedImage(null);
+  };
+
+  const handleManageHome = () => {
+    router.push('/pages/home');
+  };
+
+  const handleLogout = () => {
+    Alert.alert('Déconnexion', 'Voulez-vous vraiment vous déconnecter ?', [
       {
         text: 'Annuler',
         style: 'cancel',
@@ -76,24 +204,41 @@ export default function ProfileScreen() {
         </View>
         
         <View style={styles.profileHeader}>
-          <View style={styles.avatarContainer}>
-            {user.picture ? (
-              <Image
-                source={{ uri: `${API_URL}${user.picture}` }}
-                style={styles.avatarImage}
-                contentFit="cover"
-                transition={200}
-                onLoad={() => console.log('Image chargée:', `${API_URL}${user.picture}`)}
-                onError={(error) => console.log('Erreur chargement image:', error, `${API_URL}${user.picture}`)}
-              />
-            ) : (
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>
-                  {user.firstname[0]}{user.lastname[0]}
-                </Text>
-              </View>
-            )}
-          </View>
+          <TouchableOpacity 
+            style={styles.avatarContainer} 
+            onPress={handleSelectImage}
+            disabled={!isEditing}
+            activeOpacity={isEditing ? 0.7 : 1}
+          >
+            <View style={styles.avatarWrapper}>
+              {selectedImage ? (
+                <Image
+                  source={{ uri: selectedImage }}
+                  style={styles.avatarImage}
+                  contentFit="cover"
+                  transition={200}
+                />
+              ) : user.picture ? (
+                <Image
+                  source={{ uri: `${URL}${user.picture}` }}
+                  style={styles.avatarImage}
+                  contentFit="cover"
+                  transition={200}
+                />
+              ) : (
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>
+                    {user.firstname[0]}{user.lastname[0]}
+                  </Text>
+                </View>
+              )}
+              {isEditing && (
+                <View style={styles.avatarOverlay}>
+                  <Ionicons name="pencil" size={32} color="#fff" />
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
           <Text style={styles.name}>
             {user.firstname} {user.lastname}
           </Text>
@@ -106,14 +251,32 @@ export default function ProfileScreen() {
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Prénom</Text>
-            <Text style={styles.infoValue}>{user.firstname}</Text>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editedFirstname}
+                onChangeText={setEditedFirstname}
+                placeholder="Prénom"
+              />
+            ) : (
+              <Text style={styles.infoValue}>{user.firstname}</Text>
+            )}
           </View>
 
           <View style={styles.divider} />
 
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Nom</Text>
-            <Text style={styles.infoValue}>{user.lastname}</Text>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editedLastname}
+                onChangeText={setEditedLastname}
+                placeholder="Nom"
+              />
+            ) : (
+              <Text style={styles.infoValue}>{user.lastname}</Text>
+            )}
           </View>
 
           <View style={styles.divider} />
@@ -123,9 +286,41 @@ export default function ProfileScreen() {
             <Text style={styles.infoValue}>{user.mail}</Text>
           </View>
         </View>
-      </View>
 
-      <View style={styles.actionsContainer}>
+        <TouchableOpacity style={styles.secondaryButton} onPress={handleChangePassword}>
+          <Ionicons name="lock-closed-outline" size={20} color="#68A68F" />
+          <Text style={styles.secondaryButtonText}>Changer de mot de passe</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.secondaryButton} onPress={handleManageHome}>
+          <Ionicons name="home-outline" size={20} color="#68A68F" />
+          <Text style={styles.secondaryButtonText}>Gestion du foyer</Text>
+          <Ionicons name="chevron-forward" size={20} color="#666" style={styles.chevron} />
+        </TouchableOpacity>
+
+        <View style={styles.divider} />
+        <View style={{ height: 20 }} />
+
+        {!isEditing ? (
+          <TouchableOpacity style={styles.editProfileButton} onPress={handleEditProfile}>
+            <Ionicons name="create-outline" size={20} color="#68A68F" />
+            <Text style={styles.editProfileButtonText}>Modifier le profil</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.editButtonsContainer}>
+            <TouchableOpacity style={styles.cancelButton} onPress={handleCancelEdit}>
+              <Text style={styles.cancelButtonText}>Annuler</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.saveButton} onPress={handleSaveEdit}>
+              <Text style={styles.saveButtonText}>Modifier</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={{ height: 20 }} />
+        <View style={styles.divider} />
+        <View style={{ height: 20 }} />
+
         <TouchableOpacity
           style={styles.refreshButton}
           onPress={handleRefresh}
@@ -138,146 +333,73 @@ export default function ProfileScreen() {
           )}
         </TouchableOpacity>
 
+        <View style={{ height: 20 }} />
+        <View style={styles.divider} />
+      </View>
+
+      <View style={styles.actionsContainer}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Se déconnecter</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
     
+    {/* Modal changement de mot de passe */}
+    <Modal
+      visible={passwordModalVisible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={() => setPasswordModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Changer de mot de passe</Text>
+            <TouchableOpacity onPress={() => setPasswordModalVisible(false)}>
+              <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.modalBody}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Nouveau mot de passe</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={newPassword}
+                onChangeText={setNewPassword}
+                placeholder="Minimum 8 caractères"
+                secureTextEntry
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Confirmer le mot de passe</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Retaper le mot de passe"
+                secureTextEntry
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.modalButton, isChangingPassword && styles.modalButtonDisabled]}
+              onPress={handleSubmitPasswordChange}
+              disabled={isChangingPassword}
+            >
+              {isChangingPassword ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.modalButtonText}>Modifier le mot de passe</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+    
     <NavBar />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    paddingTop: 40,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    paddingTop: 40,
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#68A68F',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-  },
-  content: {
-    flex: 1,
-  },
-  profileHeader: {
-    backgroundColor: '#fff',
-    paddingVertical: 40,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  avatarContainer: {
-    marginBottom: 16,
-  },
-  avatarImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#68A68F',
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#68A68F',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
-  },
-  email: {
-    fontSize: 16,
-    color: '#666',
-  },
-  section: {
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-  },
-  infoCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  infoRow: {
-    paddingVertical: 12,
-  },
-  infoLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
-  },
-  infoValue: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#f0f0f0',
-  },
-  actionsContainer: {
-    padding: 20,
-    paddingTop: 0,
-  },
-  refreshButton: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#68A68F',
-  },
-  refreshButtonText: {
-    color: '#68A68F',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  logoutButton: {
-    backgroundColor: '#FF3B30',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-  },
-  logoutButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});

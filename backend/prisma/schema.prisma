@@ -28,6 +28,7 @@ model Home {
   id              Int              @id @default(autoincrement())
   name            String
   permissions     Permission[]
+  inviteLinks     InviteLink[]
   categories      Category[]
   products        Product[]
   productBatches  ProductBatch[]
@@ -48,6 +49,18 @@ model Permission {
 
   @@unique([userId, homeId])
   @@map("permissions")
+}
+
+// ================= INVITE LINKS =================
+model InviteLink {
+  id             Int      @id @default(autoincrement())
+  homeId         Int      @map("home_id")
+  link           String   @unique @db.VarChar(25)
+  expirationDate DateTime @map("expiration_date")
+  createdAt      DateTime @default(now()) @map("created_at")
+  home           Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+
+  @@map("invite_links")
 }
 
 // ================= CATEGORIES =================

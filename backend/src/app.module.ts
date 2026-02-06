@@ -11,6 +11,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { ProductBatchesModule } from './product-batches/product-batches.module';
 import { CartModule } from './cart/cart.module';
+import { InviteLinksModule } from './invite-links/invite-links.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CartModule } from './cart/cart.module';
     ProductsModule,
     ProductBatchesModule,
     CartModule,
+    InviteLinksModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

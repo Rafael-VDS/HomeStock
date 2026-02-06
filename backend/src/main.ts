@@ -13,13 +13,14 @@ async function bootstrap() {
   // Activer CORS
   app.enableCors();
 
-  // Servir les fichiers statiques (avatars, images)
-  app.useStaticAssets(join(__dirname, '..', 'public'), {
-    prefix: '/uploads/',
-  });
-
   // Préfixe global pour toutes les routes API
   app.setGlobalPrefix('api');
+
+  // Servir les fichiers statiques (avatars, images)
+  // Sert public/uploads à la route /uploads
+  app.useStaticAssets(join(process.cwd(), 'public', 'uploads'), {
+    prefix: '/uploads',
+  });
 
   // Pipes globaux pour la validation
   app.useGlobalPipes(

@@ -8,10 +8,10 @@ export default function NavBar() {
   const pathname = usePathname();
 
   const navItems = [
-    { name: 'Stock', icon: 'archive-outline', route: '/pages/home' },
-    { name: 'Achats', icon: 'cart-outline', route: '/pages/achats' },
+    { name: 'Stock', icon: 'archive-outline', route: '/pages/stock' },
+    { name: 'Achats', icon: 'cart-outline', route: '/pages/cart' },
     { name: 'add', icon: 'add', route: null },
-    { name: 'Recettes', icon: 'receipt-outline', route: '/pages/recettes' },
+    { name: 'Recettes', icon: 'receipt-outline', route: '/pages/recipe' },
     { name: 'Compte', icon: 'person-outline', route: '/pages/profile' },
   ];
 

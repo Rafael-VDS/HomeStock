@@ -7,9 +7,7 @@
 !categories/
 
 # Autoriser les images dans avatars
-!avatars/*.jpg
-!avatars/*.jpeg
-!avatars/*.png
+!avatars/default_profil.png
 
 # Autoriser les images dans categories
 !categories/*.jpg
