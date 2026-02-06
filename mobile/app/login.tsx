@@ -30,7 +30,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await login({ mail, password });
-      router.replace('/pages/profile');
+      router.replace('/pages/home');
     } catch (error: any) {
       Alert.alert('Erreur', error.response?.data?.message || 'Email ou mot de passe incorrect');
     } finally {
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#68A68F',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   },
   registerLink: {
     fontSize: 14,
-    color: '#007AFF',
+    color: '#68A68F',
     fontWeight: '600',
   },
 });

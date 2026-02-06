@@ -1,13 +1,24 @@
 import { Stack } from "expo-router";
 import { AuthProvider } from "../context/AuthContext";
+import { useEffect } from "react";
+import * as NavigationBar from 'expo-navigation-bar';
+import { Platform } from 'react-native';
 
 export default function RootLayout() {
+  useEffect(() => {
+    // Masquer la barre de navigation sur Android
+    if (Platform.OS === 'android') {
+      NavigationBar.setVisibilityAsync('hidden');
+      NavigationBar.setBehaviorAsync('overlay-swipe');
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: '#007AFF',
+            backgroundColor: '#68A68F',
           },
           headerTintColor: '#fff',
           headerTitleStyle: {
@@ -28,8 +39,32 @@ export default function RootLayout() {
           options={{ title: 'Inscription' }} 
         />
         <Stack.Screen 
+          name="pages/home" 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="pages/achats" 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="pages/recettes" 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
           name="pages/profile" 
-          options={{ title: 'Mon Profil' }} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="pages/suivi" 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="pages/stats" 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="pages/carnet" 
+          options={{ headerShown: false }} 
         />
       </Stack>
     </AuthProvider>

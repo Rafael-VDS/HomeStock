@@ -10,7 +10,7 @@ export default function Index() {
   useEffect(() => {
     if (!loading) {
       if (user) {
-        router.replace("/pages/profile");
+        router.replace("/pages/home");
       } else {
         router.replace("/login");
       }
@@ -19,7 +19,7 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#007AFF" />
+      <ActivityIndicator size="large" color="#68A68F" />
     </View>
   );
 }
