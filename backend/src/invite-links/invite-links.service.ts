@@ -9,12 +9,12 @@ export class InviteLinksService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * Génère un code aléatoire de 10 caractères
+   * Génère un code aléatoire de 25 caractères
    */
   private generateInviteCode(): string {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 25; i++) {
       result += characters.charAt(Math.floor(Math.random() * characters.length));
     }
     return result;
@@ -58,6 +58,7 @@ export class InviteLinksService {
       data: {
         homeId: createInviteLinkDto.homeId,
         link: inviteCode,
+        permissionType: createInviteLinkDto.permissionType,
         expirationDate,
       },
     });
@@ -134,7 +135,7 @@ export class InviteLinksService {
       data: {
         userId,
         homeId: inviteLink.homeId,
-        type: 'read-write', // Par défaut, les nouveaux membres ont accès en lecture-écriture
+        type: inviteLink.permissionType,
       },
       include: {
         home: true,
