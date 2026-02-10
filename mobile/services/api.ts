@@ -105,11 +105,66 @@ export interface InviteLink {
 
 export interface CreateInviteLinkData {
   homeId: number;
+  permissionType: 'read' | 'read-write';
 }
 
 export interface UseInviteLinkData {
   link: string;
   userId: number;
+}
+
+export interface Category {
+  id: number;
+  homeId: number;
+  name: string;
+  picture: string;
+}
+
+export interface Subcategory {
+  id: number;
+  categoryId: number;
+  name: string;
+}
+
+export interface Product {
+  id: number;
+  homeId: number;
+  subcategoryId: number;
+  name: string;
+  picture: string;
+  mass: number | null;
+  liquid: number | null;
+  stockCount: number;
+  needsToBuy: boolean;
+}
+
+export interface ProductBatch {
+  id: number;
+  productId: number;
+  homeId: number;
+  expirationDate: string | null;
+  daysUntilExpiration?: number | null;
+  isExpired?: boolean;
+  expiringSoon?: boolean;
+}
+
+export interface ProductDetail {
+  id: number;
+  homeId: number;
+  subcategoryId: number;
+  name: string;
+  picture: string;
+  mass: number | null;
+  liquid: number | null;
+  stockCount: number;
+  needsToBuy: boolean;
+  subcategory: {
+    id: number;
+    name: string;
+    categoryId: number;
+    categoryName: string;
+  };
+  productBatches?: ProductBatch[];
 }
 
 export const authAPI = {
@@ -192,6 +247,62 @@ export const inviteLinksAPI = {
 
   delete: async (id: number): Promise<void> => {
     await api.delete(`/invite-links/${id}`);
+  },
+};
+
+export const categoriesAPI = {
+  getCategoriesByHome: async (homeId: number): Promise<Category[]> => {
+    const response = await api.get(`/categories/home/${homeId}`);
+    return response.data;
+  },
+
+  getSubcategoriesByCategory: async (categoryId: number): Promise<Subcategory[]> => {
+    const response = await api.get(`/subcategories/category/${categoryId}`);
+    return response.data;
+  },
+
+  createCategory: async (formData: FormData): Promise<Category> => {
+    const token = await AsyncStorage.getItem('token');
+    const response = await axios.post(`${API_URL}/categories`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  },
+
+  createSubcategory: async (data: { name: string; categoryId: number }): Promise<Subcategory> => {
+    const response = await api.post('/subcategories', data);
+    return response.data;
+  },
+};
+
+export const productsAPI = {
+  getProductsBySubcategory: async (subcategoryId: number): Promise<Product[]> => {
+    const response = await api.get(`/products/subcategory/${subcategoryId}`);
+    return response.data;
+  },
+
+  getProductById: async (productId: number): Promise<ProductDetail> => {
+    const response = await api.get(`/products/${productId}`);
+    return response.data;
+  },
+
+  createProduct: async (formData: FormData): Promise<Product> => {
+    const token = await AsyncStorage.getItem('token');
+    const response = await axios.post(`${API_URL}/products`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  },
+
+  createBatch: async (data: { productId: number; homeId: number; expirationDate?: string }): Promise<ProductBatch> => {
+    const response = await api.post('/product-batches', data);
+    return response.data;
   },
 };
 

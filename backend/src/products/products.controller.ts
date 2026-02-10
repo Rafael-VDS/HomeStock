@@ -10,14 +10,22 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiConsumes,
 } from '@nestjs/swagger';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import type { Multer } from 'multer';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -29,7 +37,32 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './public/uploads/products',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+          cb(new BadRequestException('Seules les images sont acceptées'), false);
+        } else {
+          cb(null, true);
+        }
+      },
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+    }),
+  )
   @ApiOperation({ summary: 'Créer un nouveau produit' })
+  @ApiConsumes('multipart/form-data')
   @ApiResponse({
     status: 201,
     description: 'Le produit a été créé avec succès',
@@ -39,7 +72,11 @@ export class ProductsController {
   @ApiResponse({ status: 404, description: 'Maison non trouvée' })
   create(
     @Body() createProductDto: CreateProductDto,
+    @UploadedFile() file?: Multer.File,
   ): Promise<ProductResponseDto> {
+    if (file) {
+      createProductDto.picture = `/uploads/products/${file.filename}`;
+    }
     return this.productsService.create(createProductDto);
   }
 

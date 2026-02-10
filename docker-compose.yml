@@ -3,7 +3,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: homestock-backend
+    container_name: backend
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -20,7 +20,7 @@ services:
 
   # frontend:
   #   build: ./mobile
-  #   container_name: homestock-frontend-dev
+  #   container_name: frontend
   #   ports:
   #     - "${FRONTEND_PORT}:8081"
   #     - "${FRONTEND_PORT_2}:8082"
@@ -39,7 +39,7 @@ services:
   # PostgreSQL pour le backend
   backend_db:
     image: postgres:16-alpine
-    container_name: homestock-db
+    container_name: db
     environment:
       POSTGRES_USER: ${DB_BACKEND_USER}
       POSTGRES_PASSWORD: ${DB_BACKEND_PASSWORD}
@@ -49,7 +49,7 @@ services:
     volumes:
       - backend_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_BACKEND_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_BACKEND_USER} -d ${DB_BACKEND_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -57,7 +57,7 @@ services:
   # pgAdmin pour gérer la base de données PostgreSQL
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: homestock-pgadmin
+    container_name: pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}

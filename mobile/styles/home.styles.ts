@@ -243,4 +243,52 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  permissionOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    gap: 12,
+  },
+  permissionIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#e8f5f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  permissionInfo: {
+    flex: 1,
+  },
+  permissionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  permissionDescription: {
+    fontSize: 13,
+    color: '#666',
+    lineHeight: 18,
+  },
+  permissionDivider: {
+    height: 12,
+  },
+  codeInput: {
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    fontFamily: 'monospace',
+    letterSpacing: 1,
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
 });

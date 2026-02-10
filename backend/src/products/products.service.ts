@@ -220,6 +220,37 @@ export class ProductsService {
     const stockCount = product.productBatches?.length || 0;
     const needsToBuy = stockCount < 2;
 
+    // Formater les batches avec les informations d'expiration
+    const productBatches = product.productBatches?.map((batch: any) => {
+      let daysUntilExpiration: number | null = null;
+      let isExpired = false;
+      let expiringSoon = false;
+
+      if (batch.expirationDate) {
+        const expirationDate = new Date(batch.expirationDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        expirationDate.setHours(0, 0, 0, 0);
+
+        const diffTime = expirationDate.getTime() - today.getTime();
+        const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        daysUntilExpiration = days;
+
+        isExpired = days < 0;
+        expiringSoon = days >= 0 && days <= 7;
+      }
+
+      return {
+        id: batch.id,
+        productId: batch.productId,
+        homeId: batch.homeId,
+        expirationDate: batch.expirationDate,
+        daysUntilExpiration,
+        isExpired,
+        expiringSoon,
+      };
+    }) || [];
+
     return {
       id: product.id,
       homeId: product.homeId,
@@ -236,6 +267,7 @@ export class ProductsService {
         categoryId: product.subcategory.categoryId,
         categoryName: product.subcategory.category.name,
       },
+      productBatches,
     };
   }
 }

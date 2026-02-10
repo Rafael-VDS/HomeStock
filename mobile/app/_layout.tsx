@@ -66,6 +66,34 @@ export default function RootLayout() {
           name="pages/create-home" 
           options={{ headerShown: false }} 
         />
+        <Stack.Screen 
+          name="pages/subcategories" 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="pages/product-detail" 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="pages/add-menu" 
+          options={{ title: 'Ajouter' }} 
+        />
+        <Stack.Screen 
+          name="pages/add-category" 
+          options={{ title: 'Ajouter une catégorie' }} 
+        />
+        <Stack.Screen 
+          name="pages/add-subcategory" 
+          options={{ title: 'Ajouter une sous-catégorie' }} 
+        />
+        <Stack.Screen 
+          name="pages/add-product" 
+          options={{ title: 'Ajouter un produit' }} 
+        />
+        <Stack.Screen 
+          name="pages/add-batch" 
+          options={{ title: 'Ajouter un lot' }} 
+        />
       </Stack>
     </AuthProvider>
   );

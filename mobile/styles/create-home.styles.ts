@@ -103,4 +103,11 @@ export const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 20,
   },
+  backButton: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    zIndex: 10,
+    padding: 8,
+  },
 });

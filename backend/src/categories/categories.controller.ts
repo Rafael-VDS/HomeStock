@@ -10,8 +10,15 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import type { Multer } from 'multer';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -31,14 +38,45 @@ export class CategoriesController {
   // ==================== CATEGORIES ====================
 
   @Post('categories')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './public/uploads/categories',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|svg\+xml)$/)) {
+          cb(new BadRequestException('Seules les images sont acceptées'), false);
+        } else {
+          cb(null, true);
+        }
+      },
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+    }),
+  )
   @ApiOperation({ summary: 'Créer une catégorie' })
+  @ApiConsumes('multipart/form-data')
   @ApiResponse({
     status: 201,
     description: 'Catégorie créée avec succès',
     type: CategoryEntity,
   })
   @ApiResponse({ status: 404, description: 'Maison introuvable' })
-  createCategory(@Body() createCategoryDto: CreateCategoryDto) {
+  createCategory(
+    @Body() createCategoryDto: CreateCategoryDto,
+    @UploadedFile() file?: Multer.File,
+  ) {
+    if (file) {
+      createCategoryDto.picture = `/uploads/categories/${file.filename}`;
+    }
     return this.categoriesService.createCategory(createCategoryDto);
   }
 

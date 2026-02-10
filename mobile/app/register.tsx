@@ -94,7 +94,7 @@ export default function RegisterScreen() {
             <Text style={styles.label}>Email</Text>
             <TextInput
               style={styles.input}
-              placeholder="votre.email@example.com"
+              placeholder="adresse email"
               value={mail}
               onChangeText={setMail}
               keyboardType="email-address"

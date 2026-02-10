@@ -76,6 +76,13 @@ export default function CreateHomeScreen() {
         style={styles.keyboardView}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+
           <View style={styles.iconContainer}>
             <View style={styles.iconCircle}>
               <Ionicons name="home" size={64} color="#68A68F" />

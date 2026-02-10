@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -18,9 +18,14 @@ export default function HomeScreen() {
   const [homeId, setHomeId] = useState<number | null>(null);
   const [homeUsers, setHomeUsers] = useState<HomeUser[]>([]);
   const [otherHomes, setOtherHomes] = useState<Permission[]>([]);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [creatingInvite, setCreatingInvite] = useState(false);
+  const [showHomeChoiceModal, setShowHomeChoiceModal] = useState(false);
+  const [showJoinHomeModal, setShowJoinHomeModal] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+  const [joiningHome, setJoiningHome] = useState(false);
 
   useEffect(() => {
     loadHomeData();
@@ -96,15 +101,61 @@ export default function HomeScreen() {
   };
 
   const handleAddHome = () => {
+    setShowHomeChoiceModal(true);
+  };
+
+  const handleCreateNewHome = () => {
+    setShowHomeChoiceModal(false);
     router.push('/pages/create-home');
   };
 
-  const handleCreateInviteCode = async () => {
+  const handleOpenJoinHome = () => {
+    setShowHomeChoiceModal(false);
+    setShowJoinHomeModal(true);
+  };
+
+  const handleJoinHome = async () => {
+    if (!joinCode.trim()) {
+      Alert.alert('Erreur', 'Veuillez entrer un code d\'invitation');
+      return;
+    }
+
+    if (!user) {
+      Alert.alert('Erreur', 'Utilisateur non connecté');
+      return;
+    }
+
+    setJoiningHome(true);
+    try {
+      await inviteLinksAPI.use({ link: joinCode.trim(), userId: user.id });
+      Alert.alert('Succès', 'Vous avez rejoint le foyer avec succès');
+      setShowJoinHomeModal(false);
+      setJoinCode('');
+      // Recharger les données
+      loadHomeData();
+    } catch (error: any) {
+      console.error('Erreur lors de la tentative de rejoindre le foyer:', error);
+      const message = error.response?.data?.message || 'Impossible de rejoindre le foyer. Vérifiez le code.';
+      Alert.alert('Erreur', message);
+    } finally {
+      setJoiningHome(false);
+    }
+  };
+
+  const handleOpenPermissionModal = () => {
+    setShowPermissionModal(true);
+  };
+
+  const handleCreateInviteCode = async (permissionType: 'read' | 'read-write') => {
     if (!homeId) return;
 
+    setShowPermissionModal(false);
     setCreatingInvite(true);
     try {
-      const invite = await inviteLinksAPI.create({ homeId });
+      const invite = await inviteLinksAPI.create({ 
+        homeId, 
+        permissionType 
+      });
       setInviteCode(invite.link);
       setShowInviteModal(true);
     } catch (error) {
@@ -193,7 +244,7 @@ export default function HomeScreen() {
             })}
           </View>
 
-          <TouchableOpacity style={styles.addButton} onPress={handleCreateInviteCode} disabled={creatingInvite}>
+          <TouchableOpacity style={styles.addButton} onPress={handleOpenPermissionModal} disabled={creatingInvite}>
             <Text style={styles.addButtonText}>
               {creatingInvite ? 'Création...' : 'Ajouter'}
             </Text>
@@ -236,6 +287,172 @@ export default function HomeScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Modal pour choisir entre créer ou rejoindre un foyer */}
+      <Modal
+        visible={showHomeChoiceModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowHomeChoiceModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Ajouter un foyer</Text>
+              <TouchableOpacity onPress={() => setShowHomeChoiceModal(false)}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalDescription}>
+              Voulez-vous créer un nouveau foyer ou rejoindre un foyer existant ?
+            </Text>
+
+            <TouchableOpacity 
+              style={styles.permissionOption}
+              onPress={handleCreateNewHome}
+            >
+              <View style={styles.permissionIconContainer}>
+                <Ionicons name="add-circle-outline" size={24} color="#68A68F" />
+              </View>
+              <View style={styles.permissionInfo}>
+                <Text style={styles.permissionTitle}>Créer un foyer</Text>
+                <Text style={styles.permissionDescription}>
+                  Créez un nouveau foyer dont vous serez le propriétaire
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+
+            <View style={styles.permissionDivider} />
+
+            <TouchableOpacity 
+              style={styles.permissionOption}
+              onPress={handleOpenJoinHome}
+            >
+              <View style={styles.permissionIconContainer}>
+                <Ionicons name="enter-outline" size={24} color="#68A68F" />
+              </View>
+              <View style={styles.permissionInfo}>
+                <Text style={styles.permissionTitle}>Rejoindre un foyer</Text>
+                <Text style={styles.permissionDescription}>
+                  Entrez un code d'invitation pour rejoindre un foyer
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal pour rejoindre un foyer avec un code */}
+      <Modal
+        visible={showJoinHomeModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {
+          setShowJoinHomeModal(false);
+          setJoinCode('');
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Rejoindre un foyer</Text>
+              <TouchableOpacity onPress={() => {
+                setShowJoinHomeModal(false);
+                setJoinCode('');
+              }}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalDescription}>
+              Entrez le code d'invitation que vous avez reçu du propriétaire du foyer :
+            </Text>
+
+            <TextInput
+              style={styles.codeInput}
+              placeholder="Code d'invitation"
+              value={joinCode}
+              onChangeText={setJoinCode}
+              autoCapitalize="none"
+              autoCorrect={false}
+              maxLength={25}
+            />
+
+            <TouchableOpacity 
+              style={[styles.copyButton, joiningHome && styles.disabledButton]}
+              onPress={handleJoinHome}
+              disabled={joiningHome}
+            >
+              {joiningHome ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Ionicons name="checkmark-circle-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
+                  <Text style={styles.copyButtonText}>Rejoindre</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal pour choisir les permissions */}
+      <Modal
+        visible={showPermissionModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowPermissionModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Type d'accès</Text>
+              <TouchableOpacity onPress={() => setShowPermissionModal(false)}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalDescription}>
+              Choisissez le niveau d'accès pour la personne invitée :
+            </Text>
+
+            <TouchableOpacity 
+              style={styles.permissionOption}
+              onPress={() => handleCreateInviteCode('read')}
+            >
+              <View style={styles.permissionIconContainer}>
+                <Ionicons name="eye-outline" size={24} color="#68A68F" />
+              </View>
+              <View style={styles.permissionInfo}>
+                <Text style={styles.permissionTitle}>Voir</Text>
+                <Text style={styles.permissionDescription}>
+                  Peut consulter le stock et les recettes
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <View style={styles.permissionDivider} />
+
+            <TouchableOpacity 
+              style={styles.permissionOption}
+              onPress={() => handleCreateInviteCode('read-write')}
+            >
+              <View style={styles.permissionIconContainer}>
+                <Ionicons name="create-outline" size={24} color="#68A68F" />
+              </View>
+              <View style={styles.permissionInfo}>
+                <Text style={styles.permissionTitle}>Modifier</Text>
+                <Text style={styles.permissionDescription}>
+                  Peut voir et modifier le stock et les recettes
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Modal pour afficher le code d'invitation */}
       <Modal

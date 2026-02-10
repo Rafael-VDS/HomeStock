@@ -14,6 +14,29 @@ export class SubcategoryResponseDto {
   categoryName: string;
 }
 
+export class ProductBatchDto {
+  @ApiProperty({ example: 1 })
+  id: number;
+
+  @ApiProperty({ example: 1 })
+  productId: number;
+
+  @ApiProperty({ example: 1 })
+  homeId: number;
+
+  @ApiProperty({ example: '2026-12-31', nullable: true })
+  expirationDate: string | null;
+
+  @ApiProperty({ example: 30, nullable: true })
+  daysUntilExpiration?: number | null;
+
+  @ApiProperty({ example: false })
+  isExpired?: boolean;
+
+  @ApiProperty({ example: false })
+  expiringSoon?: boolean;
+}
+
 export class ProductResponseDto {
   @ApiProperty({ example: 1 })
   id: number;
@@ -53,4 +76,11 @@ export class ProductResponseDto {
     type: SubcategoryResponseDto,
   })
   subcategory: SubcategoryResponseDto;
+
+  @ApiProperty({
+    description: 'Liste des lots de produits en stock',
+    type: [ProductBatchDto],
+    required: false,
+  })
+  productBatches?: ProductBatchDto[];
 }
