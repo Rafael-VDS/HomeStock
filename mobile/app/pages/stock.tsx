@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { SvgUri } from 'react-native-svg';
 import NavBar from '../../components/NavBar';
-import { categoriesAPI, Category, URL } from '../../services/api';
+import { categoriesAPI, productsAPI, Category, URL } from '../../services/api';
 import { styles } from '../../styles/stock.styles';
 
 export default function StockScreen() {
@@ -32,7 +32,30 @@ export default function StockScreen() {
             setHomeId(id);
             
             const fetchedCategories = await categoriesAPI.getCategoriesByHome(id);
-            setCategories(fetchedCategories);
+
+            // Ne garder que les catégories ayant au moins une sous-catégorie avec des produits
+            const categoriesWithProducts = await Promise.all(
+                fetchedCategories.map(async (category) => {
+                    try {
+                        const subcategories = await categoriesAPI.getSubcategoriesByCategory(category.id);
+                        const subcatResults = await Promise.all(
+                            subcategories.map(async (sub) => {
+                                try {
+                                    const products = await productsAPI.getProductsBySubcategory(sub.id);
+                                    return products.length > 0;
+                                } catch {
+                                    return false;
+                                }
+                            })
+                        );
+                        return subcatResults.some(Boolean) ? category : null;
+                    } catch {
+                        return null;
+                    }
+                })
+            );
+
+            setCategories(categoriesWithProducts.filter((c): c is Category => c !== null));
         } catch (error) {
             console.error('Erreur lors du chargement des catégories:', error);
             Alert.alert('Erreur', 'Impossible de charger les catégories');

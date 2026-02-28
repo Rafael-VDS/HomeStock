@@ -43,7 +43,9 @@ export default function SubcategoriesScreen() {
                 })
             );
             
-            setSubcategories(subcategoriesWithProducts);
+            // Ne garder que les sous-catégories ayant au moins un produit
+            const filtered = subcategoriesWithProducts.filter(sub => (sub.products?.length ?? 0) > 0);
+            setSubcategories(filtered);
         } catch (error) {
             console.error('Erreur lors du chargement des sous-catégories:', error);
             Alert.alert('Erreur', 'Impossible de charger les sous-catégories');
