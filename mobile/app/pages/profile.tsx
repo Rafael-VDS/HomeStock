@@ -15,7 +15,6 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
-import NavBar from '../../components/NavBar';
 import { authAPI } from '../../services/api';
 import { styles } from '../../styles/profile.styles';
 import { URL } from '../../services/api';
@@ -398,8 +397,6 @@ export default function ProfileScreen() {
         </View>
       </View>
     </Modal>
-    
-    <NavBar />
     </SafeAreaView>
   );
 }

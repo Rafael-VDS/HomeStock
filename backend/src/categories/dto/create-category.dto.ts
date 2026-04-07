@@ -1,4 +1,4 @@
-import { IsInt, IsString, IsNotEmpty } from 'class-validator';
+import { IsInt, IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCategoryDto {
@@ -8,7 +8,7 @@ export class CreateCategoryDto {
   })
   @IsInt()
   @IsNotEmpty()
-  homeId: number;
+  homeId!: number;
 
   @ApiProperty({
     description: 'Nom de la catégorie',
@@ -16,13 +16,14 @@ export class CreateCategoryDto {
   })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiProperty({
     description: 'URL de l\'image de la catégorie',
     example: 'https://example.com/fruits.jpg',
+    required: false,
   })
   @IsString()
-  @IsNotEmpty()
-  picture: string;
+  @IsOptional()
+  picture?: string;
 }

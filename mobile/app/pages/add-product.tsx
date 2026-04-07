@@ -101,8 +101,15 @@ export default function AddProductPage() {
     try {
       setLoading(true);
       
+      const homeId = await AsyncStorage.getItem('selectedHomeId');
+      if (!homeId) {
+        Alert.alert('Erreur', 'Aucune maison sélectionnée');
+        return;
+      }
+      
       const formData = new FormData();
       formData.append('name', name);
+      formData.append('homeId', homeId);
       formData.append('subcategoryId', selectedSubcategoryId.toString());
 
       if (imageUri) {

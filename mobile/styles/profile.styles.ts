@@ -25,6 +25,7 @@ export const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    paddingBottom: 80,
   },
   profileHeader: {
     backgroundColor: '#fff',
@@ -216,7 +217,7 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
   },
   email: {
-    fontSize: 16,
+    fontSize: 12,
     color: '#666',
   },
   section: {
@@ -247,7 +248,7 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
   },
   infoValue: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '500',
     color: '#333',
   },

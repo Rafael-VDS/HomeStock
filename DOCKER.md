@@ -7,12 +7,13 @@
 
 ## Architecture
 
-Le projet utilise Docker Compose avec 4 services :
+Le projet utilise Docker Compose avec 3 services :
 
 1. **backend** : API NestJS avec Prisma ORM
 2. **backend_db** : PostgreSQL 16
 3. **pgadmin** : Interface web pour gérer PostgreSQL
-4. **frontend** : Application mobile Expo React Native
+
+Remarque : le frontend mobile n'est pas lancé en container ici — lance-le localement via Expo (voir la section "Mode développement" ci-dessous).
 
 ## Démarrage rapide
 

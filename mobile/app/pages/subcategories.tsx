@@ -166,7 +166,6 @@ export default function SubcategoriesScreen() {
                     </View>
                 )}
             </ScrollView>
-            <NavBar />
         </SafeAreaView>
     );
 }

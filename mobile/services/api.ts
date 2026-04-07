@@ -278,6 +278,52 @@ export const categoriesAPI = {
   },
 };
 
+export interface CartProduct {
+  id: number;
+  productId: number;
+  productName: string;
+  productPicture: string;
+  quantity: number;
+  checked: boolean;
+  subcategoryId: number;
+  subcategoryName: string;
+}
+
+export interface Cart {
+  id: number;
+  homeId: number;
+  products: CartProduct[];
+  totalItems: number;
+  uncheckedItems: number;
+}
+
+export const cartAPI = {
+  getCart: async (homeId: number): Promise<Cart> => {
+    const response = await api.get(`/cart/${homeId}`);
+    return response.data;
+  },
+
+  addProduct: async (homeId: number, productId: number, quantity: number): Promise<Cart> => {
+    const response = await api.post(`/cart/${homeId}/products`, { productId, quantity });
+    return response.data;
+  },
+
+  updateProduct: async (homeId: number, cartProductId: number, data: { quantity?: number; checked?: boolean }): Promise<Cart> => {
+    const response = await api.patch(`/cart/${homeId}/products/${cartProductId}`, data);
+    return response.data;
+  },
+
+  removeProduct: async (homeId: number, cartProductId: number): Promise<Cart> => {
+    const response = await api.delete(`/cart/${homeId}/products/${cartProductId}`);
+    return response.data;
+  },
+
+  clearCart: async (homeId: number, onlyChecked = false): Promise<Cart> => {
+    const response = await api.delete(`/cart/${homeId}`, { params: { onlyChecked } });
+    return response.data;
+  },
+};
+
 export const productsAPI = {
   getProductsBySubcategory: async (subcategoryId: number): Promise<Product[]> => {
     const response = await api.get(`/products/subcategory/${subcategoryId}`);
@@ -303,6 +349,114 @@ export const productsAPI = {
   createBatch: async (data: { productId: number; homeId: number; expirationDate?: string }): Promise<ProductBatch> => {
     const response = await api.post('/product-batches', data);
     return response.data;
+  },
+};
+
+export interface RecipeIngredient {
+  id: number;
+  recipeId: number;
+  productId: number;
+  productName: string;
+  quantityNeeded: number | null;
+  multipliable: boolean;
+}
+
+export interface RecipeStep {
+  id: number;
+  recipeId: number;
+  stepNumber: number;
+  content: string;
+}
+
+export interface RecipeTag {
+  id: number;
+  name: string;
+}
+
+export interface Recipe {
+  id: number;
+  homeId: number;
+  name: string;
+  picture: string;
+  description: string;
+  ingredients: RecipeIngredient[];
+  steps: RecipeStep[];
+  tags: RecipeTag[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateRecipeData {
+  homeId: number;
+  name: string;
+  description: string;
+  picture?: string;
+  tagIds?: number[];
+}
+
+export const recipesAPI = {
+  getRecipesByHome: async (homeId: number): Promise<Recipe[]> => {
+    const response = await api.get(`/recipes?homeId=${homeId}`);
+    return response.data;
+  },
+
+  getRecipeById: async (recipeId: number): Promise<Recipe> => {
+    const response = await api.get(`/recipes/${recipeId}`);
+    return response.data;
+  },
+
+  createRecipe: async (formData: FormData): Promise<Recipe> => {
+    const token = await AsyncStorage.getItem('token');
+    const response = await axios.post(`${API_URL}/recipes`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  },
+
+  updateRecipe: async (recipeId: number, formData: FormData): Promise<Recipe> => {
+    const token = await AsyncStorage.getItem('token');
+    const response = await axios.patch(`${API_URL}/recipes/${recipeId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  },
+
+  deleteRecipe: async (recipeId: number): Promise<void> => {
+    await api.delete(`/recipes/${recipeId}`);
+  },
+
+  addIngredient: async (recipeId: number, data: { productId: number; quantityNeeded?: number; multipliable: boolean }): Promise<RecipeIngredient> => {
+    const response = await api.post(`/recipes/${recipeId}/ingredients`, data);
+    return response.data;
+  },
+
+  updateIngredient: async (recipeId: number, productId: number, data: { quantityNeeded?: number; multipliable?: boolean }): Promise<RecipeIngredient> => {
+    const response = await api.patch(`/recipes/${recipeId}/ingredients/${productId}`, data);
+    return response.data;
+  },
+
+  removeIngredient: async (recipeId: number, productId: number): Promise<void> => {
+    await api.delete(`/recipes/${recipeId}/ingredients/${productId}`);
+  },
+
+  addStep: async (recipeId: number, data: { stepNumber: number; content: string }): Promise<RecipeStep> => {
+    const response = await api.post(`/recipes/${recipeId}/steps`, data);
+    return response.data;
+  },
+
+  updateStep: async (recipeId: number, stepNumber: number, content: string): Promise<RecipeStep> => {
+    const response = await api.patch(`/recipes/${recipeId}/steps/${stepNumber}`, { content });
+    return response.data;
+  },
+
+  removeStep: async (recipeId: number, stepNumber: number): Promise<void> => {
+    await api.delete(`/recipes/${recipeId}/steps/${stepNumber}`);
   },
 };
 

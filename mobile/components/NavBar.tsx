@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet, Text, Modal } from 'react-native';
-import { useRouter, usePathname } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AddCategoryModal from './modals/AddCategoryModal';
 import AddSubcategoryModal from './modals/AddSubcategoryModal';
 import AddProductModal from './modals/AddProductModal';
 import AddBatchModal from './modals/AddBatchModal';
 
-export default function NavBar() {
+function NavBar({ pathname }: { pathname: string }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
@@ -29,17 +28,27 @@ export default function NavBar() {
     { title: 'Ajouter une sous-catégorie', action: () => { setShowAddModal(false); setShowSubcategoryModal(true); } },
     { title: 'Ajouter un produit', action: () => { setShowAddModal(false); setShowProductModal(true); } },
     { title: 'Ajouter un lot', action: () => { setShowAddModal(false); setShowBatchModal(true); } },
+    { title: 'Ajouter une recette', action: () => { setShowAddModal(false); router.push('/pages/add-recipe'); } },
   ];
 
-  const handlePress = (item: any) => {
+  const handlePress = useCallback((item: any) => {
     if (item.name === 'add') {
       setShowAddModal(true);
       return;
     }
     if (item.route) {
-      router.replace(item.route);
+      router.push(item.route);
     }
-  };
+  }, [router]);
+
+  // Fermer les modals quand on change de page pour éviter les animations
+  useEffect(() => {
+    setShowAddModal(false);
+    setShowCategoryModal(false);
+    setShowSubcategoryModal(false);
+    setShowProductModal(false);
+    setShowBatchModal(false);
+  }, [pathname]);
 
   return (
     <>
@@ -88,6 +97,10 @@ export default function NavBar() {
               <Text style={styles.addOptionText}>{addOptions[3].title}</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity style={styles.addOptionButton} onPress={addOptions[4].action}>
+              <Text style={styles.addOptionText}>{addOptions[4].title}</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity style={styles.addButtonCircle} onPress={() => setShowAddModal(false)}>
               <Ionicons name="add" size={32} color="#fff" />
             </TouchableOpacity>
@@ -120,10 +133,11 @@ export default function NavBar() {
               style={[styles.navItem, isActive && styles.activeNavItem]}
               onPress={() => handlePress(item)}
             >
+              <View style={[styles.iconBackground, !isActive && styles.iconBackgroundInactive]} />
               <Ionicons 
                 name={item.icon as any} 
                 size={24} 
-                color={isActive ? '#68A68F' : '#8E8E93'} 
+                color={isActive ? '#fff' : '#8E8E93'} 
               />
               <Text style={[styles.navText, isActive && styles.activeText]}>
                 {item.name}
@@ -152,19 +166,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
+    position: 'relative',
+  },
+  iconBackground: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    backgroundColor: 'rgba(104, 166, 143, 0.85)',
+    borderRadius: 12,
+    zIndex: -1,
+  },
+  iconBackgroundInactive: {
+    backgroundColor: 'transparent',
   },
   navText: {
     fontSize: 12,
     color: '#8E8E93',
   },
   activeText: {
-    color: '#68A68F',
+    color: '#fff',
     fontWeight: '600',
   },
   activeNavItem: {
-    backgroundColor: '#68A68F15',
+    backgroundColor: 'transparent',
     borderRadius: 12,
-    marginHorizontal: 4,
   },
   addButtonContainer: {
     flex: 1,
@@ -231,3 +256,6 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '45deg' }],
   },
 });
+
+export default NavBar;
+

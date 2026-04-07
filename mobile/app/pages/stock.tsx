@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { SvgUri } from 'react-native-svg';
-import NavBar from '../../components/NavBar';
 import { categoriesAPI, productsAPI, Category, URL } from '../../services/api';
 import { styles } from '../../styles/stock.styles';
 
@@ -144,7 +143,6 @@ export default function StockScreen() {
                     </View>
                 )}
             </ScrollView>
-            <NavBar />
         </SafeAreaView>
     );
 }

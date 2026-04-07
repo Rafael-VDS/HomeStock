@@ -45,7 +45,7 @@ export class ProductsService {
         homeId: createProductDto.homeId,
         subcategoryId: createProductDto.subcategoryId,
         name: createProductDto.name,
-        picture: createProductDto.picture,
+        picture: createProductDto.picture || '/uploads/products/default.jpg',
         mass: createProductDto.mass,
         liquid: createProductDto.liquid,
       },

@@ -71,12 +71,17 @@ export class ProductsController {
   @ApiResponse({ status: 400, description: 'Données invalides' })
   @ApiResponse({ status: 404, description: 'Maison non trouvée' })
   create(
-    @Body() createProductDto: CreateProductDto,
+    @Body() body: any,
     @UploadedFile() file?: Multer.File,
   ): Promise<ProductResponseDto> {
-    if (file) {
-      createProductDto.picture = `/uploads/products/${file.filename}`;
-    }
+    const createProductDto: CreateProductDto = {
+      name: body.name,
+      homeId: parseInt(body.homeId, 10),
+      subcategoryId: parseInt(body.subcategoryId, 10),
+      picture: file ? `/uploads/products/${file.filename}` : '',
+      mass: body.mass ? parseInt(body.mass, 10) : undefined,
+      liquid: body.liquid ? parseInt(body.liquid, 10) : undefined,
+    };
     return this.productsService.create(createProductDto);
   }
 

@@ -15,7 +15,7 @@ export class CreateProductDto {
   })
   @IsInt()
   @IsNotEmpty()
-  homeId: number;
+  homeId!: number;
 
   @ApiProperty({
     description: 'ID de la sous-catégorie',
@@ -23,7 +23,7 @@ export class CreateProductDto {
   })
   @IsInt()
   @IsNotEmpty()
-  subcategoryId: number;
+  subcategoryId!: number;
 
   @ApiProperty({
     description: 'Nom du produit',
@@ -31,15 +31,16 @@ export class CreateProductDto {
   })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiProperty({
     description: 'URL de l\'image du produit',
     example: 'https://example.com/product.jpg',
+    required: false,
   })
   @IsString()
-  @IsNotEmpty()
-  picture: string;
+  @IsOptional()
+  picture?: string;
 
   @ApiProperty({
     description: 'Masse du produit en grammes',

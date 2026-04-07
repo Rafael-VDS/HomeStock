@@ -71,12 +71,14 @@ export class CategoriesController {
   })
   @ApiResponse({ status: 404, description: 'Maison introuvable' })
   createCategory(
-    @Body() createCategoryDto: CreateCategoryDto,
+    @Body() body: any,
     @UploadedFile() file?: Multer.File,
   ) {
-    if (file) {
-      createCategoryDto.picture = `/uploads/categories/${file.filename}`;
-    }
+    const createCategoryDto: CreateCategoryDto = {
+      name: body.name,
+      homeId: parseInt(body.homeId, 10),
+      picture: file ? `/uploads/categories/${file.filename}` : '',
+    };
     return this.categoriesService.createCategory(createCategoryDto);
   }
 

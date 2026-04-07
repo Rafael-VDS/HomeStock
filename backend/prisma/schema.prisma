@@ -146,12 +146,13 @@ model Recipe {
   homeId         Int                 @map("home_id")
   name           String
   picture        String
-  prepTime       Int                 @map("prep_time")
-  recipe         String
+  description    String
   home           Home                @relation(fields: [homeId], references: [id])
   recipeProducts RecipeProduct[]
   recipeSteps    RecipeStep[]
   recipeTags     RecipeRecipeTag[]
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
 
   @@map("recipes")
 }
@@ -162,7 +163,7 @@ model RecipeProduct {
   productId       Int     @map("product_id")
   quantityNeeded  Int?    @map("quantity_needed")
   multipliable    Boolean
-  recipe          Recipe  @relation(fields: [recipeId], references: [id])
+  recipe          Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   product         Product @relation(fields: [productId], references: [id])
 
   @@unique([recipeId, productId])

@@ -23,7 +23,10 @@ export class CategoriesService {
     }
 
     const category = await this.prisma.category.create({
-      data: createCategoryDto,
+      data: {
+        ...createCategoryDto,
+        picture: createCategoryDto.picture || '/uploads/categories/default.jpg',
+      },
     });
 
     return new CategoryEntity(category);
@@ -75,7 +78,7 @@ export class CategoriesService {
       });
       return new CategoryEntity(category);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if ((error as any).code === 'P2025') {
         throw new NotFoundException(`Catégorie avec l'ID ${id} introuvable`);
       }
       throw error;
@@ -89,7 +92,7 @@ export class CategoriesService {
       });
       return { message: `Catégorie avec l'ID ${id} supprimée avec succès` };
     } catch (error) {
-      if (error.code === 'P2025') {
+      if ((error as any).code === 'P2025') {
         throw new NotFoundException(`Catégorie avec l'ID ${id} introuvable`);
       }
       throw error;
@@ -154,7 +157,7 @@ export class CategoriesService {
       });
       return new SubcategoryEntity(subcategory);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if ((error as any).code === 'P2025') {
         throw new NotFoundException(`Sous-catégorie avec l'ID ${id} introuvable`);
       }
       throw error;
@@ -168,7 +171,7 @@ export class CategoriesService {
       });
       return { message: `Sous-catégorie avec l'ID ${id} supprimée avec succès` };
     } catch (error) {
-      if (error.code === 'P2025') {
+      if ((error as any).code === 'P2025') {
         throw new NotFoundException(`Sous-catégorie avec l'ID ${id} introuvable`);
       }
       throw error;

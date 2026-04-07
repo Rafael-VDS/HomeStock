@@ -3,7 +3,6 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Ima
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import NavBar from '../../components/NavBar';
 import { productsAPI, ProductDetail, URL } from '../../services/api';
 import { styles } from '../../styles/product-detail.styles';
 
@@ -171,7 +170,6 @@ export default function ProductDetailScreen() {
                     </View>
                 )}
             </ScrollView>
-            <NavBar />
         </SafeAreaView>
     );
 }
