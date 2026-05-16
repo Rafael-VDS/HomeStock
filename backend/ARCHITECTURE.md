@@ -176,24 +176,24 @@ Toute l'API est documentée automatiquement avec Swagger :
 
 ## 🚀 Points d'entrée de l'API
 
-- **Base URL** : `http://localhost:3000/api/v1`
+- **Base URL** : `http://localhost:3000/api`
 - **Documentation** : `http://localhost:3000/api/docs`
 
 ### Exemple d'endpoints générés :
-- `GET /api/v1/products` - Liste tous les produits
-- `GET /api/v1/products/:id` - Détails d'un produit
-- `POST /api/v1/products` - Créer un produit
-- `PATCH /api/v1/products/:id` - Modifier un produit
-- `DELETE /api/v1/products/:id` - Supprimer un produit
-- `GET /api/v1/products/home/:homeId` - Produits par maison
-- `GET /api/v1/products/:id/stock` - Stock d'un produit
+- `GET /api/products` - Liste tous les produits
+- `GET /api/products/:id` - Détails d'un produit
+- `POST /api/products` - Créer un produit
+- `PATCH /api/products/:id` - Modifier un produit
+- `DELETE /api/products/:id` - Supprimer un produit
+- `GET /api/products/home/:homeId` - Produits par maison
+- `GET /api/products/:id/stock` - Stock d'un produit
 
 ## 📝 Validation automatique
 
 Grâce aux DTOs et class-validator :
 ```typescript
 // Requête invalide
-POST /api/v1/products
+POST /api/products
 { "name": "" }
 
 // Réponse automatique

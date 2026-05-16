@@ -5,6 +5,14 @@ import { AppService } from './app.service';
 import { PrismaService } from './prisma.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { HomesModule } from './homes/homes.module';
+import { PermissionsModule } from './permissions/permissions.module';
+import { CategoriesModule } from './categories/categories.module';
+import { ProductsModule } from './products/products.module';
+import { ProductBatchesModule } from './product-batches/product-batches.module';
+import { CartModule } from './cart/cart.module';
+import { InviteLinksModule } from './invite-links/invite-links.module';
+import { RecipesModule } from './recipes/recipes.module';
 
 @Module({
   imports: [
@@ -13,6 +21,14 @@ import { AuthModule } from './auth/auth.module';
     }),
     UsersModule,
     AuthModule,
+    HomesModule,
+    PermissionsModule,
+    CategoriesModule,
+    ProductsModule,
+    ProductBatchesModule,
+    CartModule,
+    InviteLinksModule,
+    RecipesModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

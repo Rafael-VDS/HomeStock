@@ -1,0 +1,15 @@
+# Ignorer tous les fichiers sauf les images
+*
+!.gitignore
+
+# Autoriser les dossiers
+!avatars/
+!categories/
+
+# Autoriser les images dans avatars
+!avatars/default_profil.png
+
+# Autoriser les images dans categories
+!categories/*.jpg
+!categories/*.jpeg
+!categories/*.png

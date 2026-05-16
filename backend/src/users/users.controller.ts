@@ -10,8 +10,15 @@ import {
   HttpStatus,
   UseGuards,
   Body,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import type { Multer } from 'multer';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
@@ -71,6 +78,53 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'Utilisateur introuvable' })
   getUserPermissions(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.getUserPermissions(id);
+  }
+
+  @Patch(':id/avatar')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './public/uploads/avatars',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+          cb(new BadRequestException('Seules les images sont acceptées'), false);
+        } else {
+          cb(null, true);
+        }
+      },
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+    }),
+  )
+  @ApiOperation({ summary: 'Mettre à jour l\'avatar d\'un utilisateur' })
+  @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'id', description: 'ID de l\'utilisateur' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Avatar mis à jour',
+    type: UserEntity 
+  })
+  @ApiResponse({ status: 400, description: 'Fichier invalide' })
+  @ApiResponse({ status: 404, description: 'Utilisateur introuvable' })
+  async updateAvatar(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Aucun fichier fourni');
+    }
+
+    const picturePath = `/uploads/avatars/${file.filename}`;
+    return this.usersService.update(id, { picture: picturePath });
   }
 
   @Patch(':id')

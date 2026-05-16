@@ -13,13 +13,14 @@ async function bootstrap() {
   // Activer CORS
   app.enableCors();
 
-  // Servir les fichiers statiques (avatars, images)
-  app.useStaticAssets(join(__dirname, '..', 'public'), {
-    prefix: '/uploads/',
-  });
-
   // Préfixe global pour toutes les routes API
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api');
+
+  // Servir les fichiers statiques (avatars, images)
+  // Sert public/uploads à la route /uploads
+  app.useStaticAssets(join(process.cwd(), 'public', 'uploads'), {
+    prefix: '/uploads',
+  });
 
   // Pipes globaux pour la validation
   app.useGlobalPipes(
@@ -56,12 +57,12 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = process.env.PORT ?? 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 
   console.log('');
-  console.log('🚀 Application is running on: http://localhost:' + port);
+  console.log('🚀 Application is running on: http://0.0.0.0:' + port);
   console.log('📚 API Documentation: http://localhost:' + port + '/api/docs');
-  console.log('🔗 API Base URL: http://localhost:' + port + '/api/v1');
+  console.log('🔗 API Base URL: http://localhost:' + port + '/api');
   console.log('');
 }
 bootstrap();
