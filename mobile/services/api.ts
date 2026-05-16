@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { URL } from '../config/config';
 
-export const URL = 'http://192.168.1.50:3000';
 const API_URL = URL+'/api';
 
 const api = axios.create({
@@ -215,6 +215,11 @@ export const permissionsAPI = {
 export const homesAPI = {
   create: async (data: CreateHomeData): Promise<Home> => {
     const response = await api.post('/homes', data);
+    return response.data;
+  },
+
+  getHomes: async (): Promise<Home[]> => {
+    const response = await api.get('/homes');
     return response.data;
   },
 

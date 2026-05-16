@@ -49,11 +49,11 @@ export default function RootLayout() {
         />
         <Stack.Screen 
           name="login" 
-          options={{ title: 'Connexion' }} 
+          options={{ title: 'Connexion', headerShown: false, navigationBarHidden: true }} 
         />
         <Stack.Screen 
           name="register" 
-          options={{ title: 'Inscription' }} 
+          options={{ title: 'Inscription',headerShown: false, navigationBarHidden: true }} 
         />
         <Stack.Screen 
           name="pages/stock" 
@@ -117,7 +117,7 @@ export default function RootLayout() {
         />
         <Stack.Screen 
           name="pages/add-recipe" 
-          options={{ headerShown: false }} 
+          options={{ title: 'Ajouter une recette' }} 
         />
         <Stack.Screen 
           name="pages/recipe-detail" 
@@ -125,7 +125,7 @@ export default function RootLayout() {
         />
         <Stack.Screen 
           name="pages/edit-recipe" 
-          options={{ title: 'Modifier la recette' }} 
+          options={{ title: 'Modifier la recette' }}
         />
       </Stack>
         {showNavBar && <NavBar pathname={pathname} />}
