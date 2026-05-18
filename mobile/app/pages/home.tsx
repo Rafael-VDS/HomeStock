@@ -7,8 +7,9 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Clipboard from 'expo-clipboard';
 import { useAuth } from '../../context/AuthContext';
-import { homesAPI, permissionsAPI, inviteLinksAPI, HomeUser, Permission, URL } from '../../services/api';
+import { homesAPI, permissionsAPI, inviteLinksAPI, HomeUser, Permission } from '../../services/api';
 import { styles } from '../../styles/home.styles';
+import { URL } from '../../config/config';
 
 export default function HomeScreen() {
   const router = useRouter();

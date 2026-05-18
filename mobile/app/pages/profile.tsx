@@ -17,7 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
 import { authAPI } from '../../services/api';
 import { styles } from '../../styles/profile.styles';
-import { URL } from '../../services/api';
+import { URL } from '../../config/config';
 
 export default function ProfileScreen() {
   const { user, loading, logout, loadUser } = useAuth();

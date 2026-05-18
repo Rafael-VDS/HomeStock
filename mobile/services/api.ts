@@ -194,11 +194,9 @@ export const authAPI = {
   },
 
   updateAvatar: async (userId: number, formData: FormData): Promise<User> => {
-    const token = await AsyncStorage.getItem('token');
-    const response = await axios.patch(`${API_URL}/users/${userId}/avatar`, formData, {
+    const response = await api.patch(`/users/${userId}/avatar`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${token}`,
       },
     });
     return response.data;
@@ -267,11 +265,9 @@ export const categoriesAPI = {
   },
 
   createCategory: async (formData: FormData): Promise<Category> => {
-    const token = await AsyncStorage.getItem('token');
-    const response = await axios.post(`${API_URL}/categories`, formData, {
+    const response = await api.post('/categories', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${token}`,
       },
     });
     return response.data;
@@ -341,11 +337,9 @@ export const productsAPI = {
   },
 
   createProduct: async (formData: FormData): Promise<Product> => {
-    const token = await AsyncStorage.getItem('token');
-    const response = await axios.post(`${API_URL}/products`, formData, {
+    const response = await api.post('/products', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${token}`,
       },
     });
     return response.data;

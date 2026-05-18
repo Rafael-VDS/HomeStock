@@ -131,8 +131,6 @@ export default function AddProductModal({ visible, onClose, onSuccess }: AddProd
           name: filename,
           type,
         } as any);
-      } else {
-        formData.append('picture', '');
       }
 
       await productsAPI.createProduct(formData);

@@ -5,8 +5,9 @@ import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { recipesAPI, productsAPI, categoriesAPI, Product, Recipe, RecipeIngredient, RecipeStep, URL } from '../../services/api';
+import { recipesAPI, productsAPI, categoriesAPI, Product, Recipe, RecipeIngredient, RecipeStep } from '../../services/api';
 import { styles } from '../../styles/add-form.styles';
+import { URL } from '../../config/config';
 
 interface SelectedIngredient extends RecipeIngredient {
   productName: string;
@@ -231,7 +232,7 @@ export default function EditRecipePage() {
       for (const ingredient of selectedIngredients) {
         await recipesAPI.addIngredient(parseInt(recipeId as string), {
           productId: ingredient.productId,
-          quantityNeeded: ingredient.quantityNeeded || undefined,
+          quantityNeeded: ingredient.quantityNeeded ?? undefined,
           multipliable: ingredient.multipliable,
         });
       }

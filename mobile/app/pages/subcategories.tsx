@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import NavBar from '../../components/NavBar';
-import { categoriesAPI, productsAPI, Subcategory, Product, URL } from '../../services/api';
+import { categoriesAPI, productsAPI, Subcategory, Product } from '../../services/api';
 import { styles } from '../../styles/subcategories.styles';
+import { URL } from '../../config/config';
 
 interface SubcategoryWithProducts extends Subcategory {
     products?: Product[];

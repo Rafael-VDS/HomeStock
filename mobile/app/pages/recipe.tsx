@@ -3,8 +3,9 @@ import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator, Ale
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
-import { recipesAPI, Recipe, URL } from '../../services/api';
+import { recipesAPI, Recipe } from '../../services/api';
 import { styles } from '../../styles/recipe.styles';
+import { URL } from '../../config/config';
 
 export default function RecipeScreen() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);

@@ -3,8 +3,9 @@ import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator, Ale
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { recipesAPI, Recipe, URL } from '../../services/api';
+import { recipesAPI, Recipe } from '../../services/api';
 import { styles } from '../../styles/recipe.styles';
+import { URL } from '../../config/config';
 
 export default function RecipeDetailScreen() {
   const { recipeId } = useLocalSearchParams();

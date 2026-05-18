@@ -77,7 +77,7 @@ export class CategoriesController {
     const createCategoryDto: CreateCategoryDto = {
       name: body.name,
       homeId: parseInt(body.homeId, 10),
-      picture: file ? `/uploads/categories/${file.filename}` : '',
+      picture: file ? `/uploads/categories/${file.filename}` : undefined,
     };
     return this.categoriesService.createCategory(createCategoryDto);
   }

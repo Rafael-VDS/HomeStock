@@ -18,10 +18,10 @@ import {
   cartAPI,
   Category,
   Subcategory,
-  Product,
-  URL,
+  Product
 } from '../../services/api';
 import { styles } from '../../styles/cart.styles';
+import { URL } from '../../config/config';
 
 interface SubcategoryWithProducts extends Subcategory {
   products: Product[];

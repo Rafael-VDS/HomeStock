@@ -78,7 +78,7 @@ export class ProductsController {
       name: body.name,
       homeId: parseInt(body.homeId, 10),
       subcategoryId: parseInt(body.subcategoryId, 10),
-      picture: file ? `/uploads/products/${file.filename}` : '',
+      picture: file ? `/uploads/products/${file.filename}` : undefined,
       mass: body.mass ? parseInt(body.mass, 10) : undefined,
       liquid: body.liquid ? parseInt(body.liquid, 10) : undefined,
     };

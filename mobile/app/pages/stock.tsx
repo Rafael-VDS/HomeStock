@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { SvgUri } from 'react-native-svg';
-import { categoriesAPI, productsAPI, Category, URL } from '../../services/api';
+import { categoriesAPI, productsAPI, Category } from '../../services/api';
+import { URL } from '../../config/config';
 import { styles } from '../../styles/stock.styles';
 
 export default function StockScreen() {

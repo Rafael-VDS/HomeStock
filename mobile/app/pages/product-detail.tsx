@@ -3,8 +3,9 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Ima
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { productsAPI, ProductDetail, URL } from '../../services/api';
+import { productsAPI, ProductDetail } from '../../services/api';
 import { styles } from '../../styles/product-detail.styles';
+import { URL } from '../../config/config';
 
 export default function ProductDetailScreen() {
     const { productId } = useLocalSearchParams<{ productId: string }>();
