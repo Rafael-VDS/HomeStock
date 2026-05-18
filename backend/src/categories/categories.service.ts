@@ -78,7 +78,7 @@ export class CategoriesService {
       });
       return new CategoryEntity(category);
     } catch (error) {
-      if ((error as any).code === 'P2025') {
+      if (error.code === 'P2025') {
         throw new NotFoundException(`Catégorie avec l'ID ${id} introuvable`);
       }
       throw error;
@@ -92,7 +92,7 @@ export class CategoriesService {
       });
       return { message: `Catégorie avec l'ID ${id} supprimée avec succès` };
     } catch (error) {
-      if ((error as any).code === 'P2025') {
+      if (error.code === 'P2025') {
         throw new NotFoundException(`Catégorie avec l'ID ${id} introuvable`);
       }
       throw error;
@@ -157,7 +157,7 @@ export class CategoriesService {
       });
       return new SubcategoryEntity(subcategory);
     } catch (error) {
-      if ((error as any).code === 'P2025') {
+      if (error.code === 'P2025') {
         throw new NotFoundException(`Sous-catégorie avec l'ID ${id} introuvable`);
       }
       throw error;
@@ -171,7 +171,7 @@ export class CategoriesService {
       });
       return { message: `Sous-catégorie avec l'ID ${id} supprimée avec succès` };
     } catch (error) {
-      if ((error as any).code === 'P2025') {
+      if (error.code === 'P2025') {
         throw new NotFoundException(`Sous-catégorie avec l'ID ${id} introuvable`);
       }
       throw error;

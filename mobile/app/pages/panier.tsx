@@ -13,8 +13,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { TextInput } from 'react-native';
-import { cartAPI, productsAPI, Cart, URL } from '../../services/api';
+import { cartAPI, productsAPI, Cart } from '../../services/api';
 import { styles } from '../../styles/panier.styles';
+import { URL } from '../../config/config';
 
 // Une ligne virtuelle = 1 unité physique d'un cartProduct
 interface CartLine {

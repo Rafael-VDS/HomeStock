@@ -122,8 +122,6 @@ export default function AddProductPage() {
           name: filename,
           type,
         } as any);
-      } else {
-        formData.append('picture', '');
       }
 
       await productsAPI.createProduct(formData);

@@ -61,8 +61,6 @@ export default function AddCategoryPage() {
           name: filename,
           type,
         } as any);
-      } else {
-        formData.append('picture', '');
       }
 
       await categoriesAPI.createCategory(formData);

@@ -66,9 +66,6 @@ export default function AddCategoryModal({ visible, onClose, onSuccess }: AddCat
           name: filename,
           type,
         } as any);
-      } else {
-        // Envoyer une chaîne vide si aucune image n'est sélectionnée
-        formData.append('picture', '');
       }
 
       await categoriesAPI.createCategory(formData);

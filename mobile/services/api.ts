@@ -194,11 +194,9 @@ export const authAPI = {
   },
 
   updateAvatar: async (userId: number, formData: FormData): Promise<User> => {
-    const token = await AsyncStorage.getItem('token');
-    const response = await axios.patch(`${API_URL}/users/${userId}/avatar`, formData, {
+    const response = await api.patch(`/users/${userId}/avatar`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${token}`,
       },
     });
     return response.data;
@@ -267,18 +265,22 @@ export const categoriesAPI = {
   },
 
   createCategory: async (formData: FormData): Promise<Category> => {
-    const token = await AsyncStorage.getItem('token');
-    const response = await axios.post(`${API_URL}/categories`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await api.post('/categories', formData);
+    return response.data;
+  },
+
+  updateCategory: async (categoryId: number, formData: FormData): Promise<Category> => {
+    const response = await api.patch(`/categories/${categoryId}`, formData);
     return response.data;
   },
 
   createSubcategory: async (data: { name: string; categoryId: number }): Promise<Subcategory> => {
     const response = await api.post('/subcategories', data);
+    return response.data;
+  },
+
+  updateSubcategory: async (subcategoryId: number, data: { name: string }): Promise<Subcategory> => {
+    const response = await api.patch(`/subcategories/${subcategoryId}`, data);
     return response.data;
   },
 };
@@ -341,13 +343,16 @@ export const productsAPI = {
   },
 
   createProduct: async (formData: FormData): Promise<Product> => {
-    const token = await AsyncStorage.getItem('token');
-    const response = await axios.post(`${API_URL}/products`, formData, {
+    const response = await api.post('/products', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${token}`,
       },
     });
+    return response.data;
+  },
+
+  updateProduct: async (productId: number, data: { name?: string }): Promise<Product> => {
+    const response = await api.patch(`/products/${productId}`, data);
     return response.data;
   },
 

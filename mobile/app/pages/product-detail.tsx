@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image, TextInput, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { productsAPI, ProductDetail, URL } from '../../services/api';
+import { productsAPI, ProductDetail } from '../../services/api';
 import { styles } from '../../styles/product-detail.styles';
+import { URL } from '../../config/config';
 
 export default function ProductDetailScreen() {
     const { productId } = useLocalSearchParams<{ productId: string }>();
     const [product, setProduct] = useState<ProductDetail | null>(null);
     const [loading, setLoading] = useState(true);
+    const [editingProduct, setEditingProduct] = useState<ProductDetail | null>(null);
+    const [editName, setEditName] = useState('');
+    const [saveLoading, setSaveLoading] = useState(false);
 
     useEffect(() => {
         if (productId) {
@@ -33,6 +37,36 @@ export default function ProductDetailScreen() {
 
     const handleGoBack = () => {
         router.back();
+    };
+
+    const openEditModal = (prod: ProductDetail) => {
+        setEditingProduct(prod);
+        setEditName(prod.name);
+    };
+
+    const saveProduct = async () => {
+        if (!editName.trim()) {
+            Alert.alert('Erreur', 'Entrez un nom');
+            return;
+        }
+
+        if (!editingProduct) return;
+
+        try {
+            setSaveLoading(true);
+            await productsAPI.updateProduct(editingProduct.id, {
+                name: editName,
+            });
+            
+            Alert.alert('Succès', 'Produit modifié');
+            setEditingProduct(null);
+            loadProduct();
+        } catch (error) {
+            console.error('Erreur:', error);
+            Alert.alert('Erreur', 'Impossible de modifier le produit');
+        } finally {
+            setSaveLoading(false);
+        }
     };
 
     const formatDate = (dateString: string | null) => {
@@ -70,6 +104,11 @@ export default function ProductDetailScreen() {
                         <Ionicons name="arrow-back" size={24} color="#333" />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Détails du produit</Text>
+                    {product && (
+                        <TouchableOpacity onPress={() => openEditModal(product)} style={{ padding: 12 }}>
+                            <Ionicons name="pencil" size={24} color="#333" />
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 {loading ? (
@@ -170,6 +209,70 @@ export default function ProductDetailScreen() {
                     </View>
                 )}
             </ScrollView>
+
+            <Modal
+                visible={editingProduct !== null}
+                animationType="slide"
+                transparent={false}
+                onRequestClose={() => setEditingProduct(null)}
+            >
+                <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }} edges={['top']}>
+                    <ScrollView style={{ flex: 1, padding: 16 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                            <TouchableOpacity
+                                onPress={() => setEditingProduct(null)}
+                                style={{ marginRight: 12 }}
+                            >
+                                <Ionicons name="arrow-back" size={24} color="#333" />
+                            </TouchableOpacity>
+                            <Text style={{ fontSize: 18, fontWeight: '700', color: '#333' }}>
+                                Modifier le produit
+                            </Text>
+                        </View>
+
+                        {/* Nom */}
+                        <View style={{ marginBottom: 20 }}>
+                            <Text style={{ fontSize: 14, fontWeight: '600', marginBottom: 8, color: '#333' }}>
+                                Nom du produit
+                            </Text>
+                            <TextInput
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: '#ddd',
+                                    borderRadius: 8,
+                                    padding: 12,
+                                    fontSize: 16,
+                                    color: '#333',
+                                }}
+                                placeholder="Entrez le nom"
+                                value={editName}
+                                onChangeText={setEditName}
+                            />
+                        </View>
+
+                        {/* Bouton save */}
+                        <TouchableOpacity
+                            onPress={saveProduct}
+                            disabled={saveLoading}
+                            style={{
+                                backgroundColor: saveLoading ? '#ccc' : '#68A68F',
+                                padding: 16,
+                                borderRadius: 8,
+                                alignItems: 'center',
+                                marginBottom: 16,
+                            }}
+                        >
+                            {saveLoading ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>
+                                    Enregistrer
+                                </Text>
+                            )}
+                        </TouchableOpacity>
+                    </ScrollView>
+                </SafeAreaView>
+            </Modal>
         </SafeAreaView>
     );
 }
