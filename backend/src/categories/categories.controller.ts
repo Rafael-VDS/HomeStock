@@ -13,6 +13,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
@@ -39,7 +40,7 @@ export class CategoriesController {
 
   @Post('categories')
   @UseInterceptors(
-    FileInterceptor('image', {
+    FileInterceptor('picture', {
       storage: diskStorage({
         destination: './public/uploads/categories',
         filename: (req, file, cb) => {
@@ -109,7 +110,32 @@ export class CategoriesController {
   }
 
   @Patch('categories/:id')
+  @UseInterceptors(
+    FileInterceptor('picture', {
+      storage: diskStorage({
+        destination: './public/uploads/categories',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|svg\+xml)$/)) {
+          cb(new BadRequestException('Seules les images sont acceptées'), false);
+        } else {
+          cb(null, true);
+        }
+      },
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+    }),
+  )
   @ApiOperation({ summary: 'Modifier une catégorie' })
+  @ApiConsumes('multipart/form-data')
   @ApiParam({ name: 'id', description: 'ID de la catégorie' })
   @ApiResponse({
     status: 200,
@@ -119,8 +145,24 @@ export class CategoriesController {
   @ApiResponse({ status: 404, description: 'Catégorie introuvable' })
   updateCategory(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateCategoryDto: UpdateCategoryDto,
+    @Req() req: any,
+    @UploadedFile() file?: Multer.File,
   ) {
+    const updateCategoryDto: UpdateCategoryDto = {};
+    
+    // Récupérer le nom depuis les champs du formulaire
+    if (req.body.name) {
+      updateCategoryDto.name = req.body.name;
+    }
+    
+    // Si un fichier est uploadé, ajouter le chemin
+    if (file) {
+      updateCategoryDto.picture = `/uploads/categories/${file.filename}`;
+    }
+    
+    console.log('UPDATE DTO:', updateCategoryDto); // Debug
+    console.log('FILE:', file); // Debug
+    
     return this.categoriesService.updateCategory(id, updateCategoryDto);
   }
 
