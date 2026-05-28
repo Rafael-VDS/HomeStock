@@ -1,304 +1,160 @@
-# 🏠 HomeStock
+# HomeStock
 
-Application complète de **gestion d'inventaire alimentaire et ménager** pour la maison avec gestion intelligente des dates d'expiration, panier de courses collaboratif et recettes interactives.
+Application mobile de gestion de stock alimentaire pour la maison. Plusieurs personnes peuvent partager le même foyer, gérer un inventaire commun, tenir une liste de courses et suivre des recettes.
 
-## 🎯 Concept clé
+## Ce que fait l'application
 
-HomeStock gère **des unités physiques réelles** (paquets, bouteilles, cannettes, etc.), pas des quantités abstraites.
+Le stock est suivi à l'unité physique : si vous avez trois paquets de pâtes avec des dates d'expiration différentes, l'application les enregistre comme trois entrées distinctes. Quand vous utilisez un ingrédient (via une recette ou manuellement), c'est toujours l'unité qui expire le plus tôt qui est consommée en premier — c'est le principe FEFO (First Expired, First Out).
 
-Chaque unité possédée dans la maison est tracée individuellement avec sa propre date d'expiration. Le stock est donc calculé dynamiquement en comptant les unités disponibles.
+Les produits sont organisés en catégories et sous-catégories (ex. Féculents > Pâtes > Tagliatelles Barilla 500g). Chaque foyer a ses propres catégories, produits, panier et recettes.
 
-### Hiérarchie de l'inventaire
-```
-Catégorie (Féculents)
-  └── Sous-catégorie (Pâtes)
-      └── Produit (Tagliatelles Barilla 500g)
-          └── Unités réelles (3 paquets avec dates différentes)
-```
+## Stack technique
 
-## 🏗️ Architecture
+| Côté    | Technologie                       |
+|---------|-----------------------------------|
+| Backend | NestJS 11, TypeScript, PostgreSQL |
+| ORM     | Prisma                            |
+| Auth    | JWT                               |
+| Mobile  | React Native 0.81, Expo Router    |
+| Infra   | Docker, Docker Compose            |
 
-### Backend - NestJS
-- **Framework** : NestJS avec TypeScript
-- **Base de données** : MySQL 8.0
-- **ORM** : Prisma
-- **Authentification** : JWT
-- **Validation** : Class Validator
-- **API Docs** : Swagger
-- **Port** : 3000
+## Lancer le projet
 
-**Modules disponibles :**
-- `auth` - Authentification et permissions
-- `users` - Gestion des utilisateurs
-- `homes` - Gestion des foyers/maisons
-- `categories` - Catégories et sous-catégories
-- `products` - Produits
-- `product-batches` - Unités physiques avec dates
-- `cart` - Panier de courses partagé
-- `recipes` - Recettes et étapes
-- `permissions` - Système de permissions
+### Avec Docker
 
-### Mobile - React Native + Expo
-- **Framework** : React Native avec TypeScript
-- **Navigation** : Expo Router (file-based routing)
-- **UI Components** : React Native avec Ionicons
-- **État** : Context API + AsyncStorage
-- **Port** : 8081
-
-**Pages principales :**
-- Stock - Liste des catégories et produits
-- Panier - Gestion des courses
-- Recettes - Consultation et gestion
-- Profil - Paramètres utilisateur
-- Gestion de la maison - Création et sélection
-
-## 🚀 Installation et lancement
-
-### Prérequis
-- **Docker** et **Docker Compose** (recommandé)
-- **Node.js** 24+ (si sans Docker)
-
-### Avec Docker (Recommandé)
+Copiez `.env.example` en `.env` à la racine, adaptez les valeurs si besoin, puis :
 
 ```bash
-# À la racine du projet
-docker-compose up
-
-# Ou avec rebuild
-docker-compose up --build
-
-# En arrière-plan
-docker-compose up -d
-
-# Voir les logs
-docker-compose logs -f backend
-
-# Arrêter tout
-docker-compose down
+docker-compose up --build   # Première fois
+docker-compose up           # Les fois suivantes
+docker-compose up -d        # En arrière-plan
 ```
 
-**Services disponibles :**
-- Backend API : http://localhost:3000
-- API Swagger : http://localhost:3000/api/docs
-- Mobile Expo : http://localhost:8081
-- phpMyAdmin : http://localhost:8080 (user: `root`)
-- MySQL : localhost:3306
+Services disponibles une fois lancé :
+
+| Service     | URL                              |
+|-------------|----------------------------------|
+| API         | http://localhost:3000            |
+| Swagger     | http://localhost:3000/api/docs   |
+| pgAdmin     | http://localhost:8080            |
+| PostgreSQL  | localhost:5432                   |
 
 ### Sans Docker
 
-#### Backend
+**Backend :**
 ```bash
 cd backend
 npm install
 npm run start:dev
 ```
 
-#### Mobile
+**Mobile :**
 ```bash
 cd mobile
 npm install
 npm start
-# Puis scanner le QR code avec Expo Go
 ```
 
-## 📱 Interface Mobile
+Scannez le QR code avec Expo Go, ou appuyez sur `a` pour Android / `i` pour iOS.
 
-### Barre de navigation
-- **Stock** - Vue d'ensemble de l'inventaire
-- **Achats** - Panier de courses
-- **+** - Ajout rapide (catégorie, produit, lot)
-- **Recettes** - Liste et détails des recettes
-- **Compte** - Profil utilisateur
+Avant de lancer le mobile, vérifiez que l'URL dans `mobile/config/config.ts` correspond bien à l'adresse IP de la machine qui fait tourner le backend.
 
-### Indicateur de page active
-Carré vert avec fond semi-transparent derrière l'icône active pour indiquer la page courante
+## Variables d'environnement
 
-### Pages clés
-
-#### Stock
-- Liste des catégories avec images
-- Clic → Liste des produits par sous-catégorie
-- Chaque produit affiche son stock en temps réel
-- Filtrage par maison
-
-#### Panier
-- Affichage des produits ajoutés
-- Sélection des unités à acheter
-- Dates d'expiration suggérées
-- Validation de l'achat
-
-#### Recettes
-- Affichage en grille 2 colonnes
-- Détails complets avec ingrédients et étapes
-- Vérification de la faisabilité
-- Multiplicateur de portions
-
-#### Profil
-- Affichage des informations utilisateur
-- Édition du profil (nom, prénom, avatar)
-- Changement de mot de passe
-- Gestion des maisons
-
-## 🗄️ Base de données
-
-### Tables principales
-
-**Utilisateurs et permissions**
-- `users` - Utilisateurs de l'application
-- `homes` - Maisons/foyers
-- `invite_links` - Liens d'invitation pour partager une maison
-- `user_homes` - Relation avec permissions
-
-**Inventaire**
-- `categories` - Catégories (Féculents, Viandes, etc.)
-- `subcategories` - Sous-catégories (Pâtes, Riz, etc.)
-- `products` - Types de produits (Tagliatelles Barilla 500g)
-- `product_batches` - **Unités réelles** avec dates d'expiration
-
-**Panier**
-- `carts` - Un panier par maison
-- `cart_products` - Produits dans le panier
-
-**Recettes**
-- `recipes` - Recettes
-- `recipe_ingredients` - Ingrédients des recettes
-- `recipe_steps` - Étapes de préparation
-
-## 🎯 Fonctionnalités détaillées
-
-### 📦 Gestion du Stock
-- ✅ Stock en temps réel (comptage dynamique des unités)
-- ✅ Dates d'expiration par unité
-- ✅ Alertes proches expiration
-- ✅ Historique des achats
-- ✅ Images des produits
-
-### 🛒 Panier de courses
-- ✅ Un seul panier partagé par maison
-- ✅ Ajout depuis la liste des produits
-- ✅ Suggestion de quantité based on stock
-- ✅ Validation crée les unités dans le stock
-- ✅ Calcul automatique des besoins
-
-### 👨‍🍳 Recettes
-- ✅ Liées aux **types de produits** (adaptables)
-- ✅ Vérification de faisabilité en temps réel
-- ✅ Consommation **FEFO** (First Expired, First Out)
-- ✅ Multiplicateur de portions
-- ✅ Ingredient marqués comme "adaptables"
-- ✅ Étapes numérotées
-
-### 🔐 Authentification et permissions
-- ✅ JWT avec refresh tokens
-- ✅ Système de permissions par maison
-- ✅ Plusieurs utilisateurs par maison
-- ✅ Rôles : owner, member
-- ✅ Liens d'invitation temporaires
-
-## 🔧 Development
-
-### Backend
-
-```bash
-cd backend
-
-# Installation
-npm install
-
-# Développement
-npm run start:dev
-
-# Build
-npm run build
-
-# Tests
-npm run test
-
-# Tests e2e
-npm run test:e2e
-
-# Linting
-npm run lint
-
-# Seed database
-npm run seed
-```
-
-### Mobile
-
-```bash
-cd mobile
-
-# Installation
-npm install
-
-# Démarrage
-npm start
-
-# Options
-# - Press a to open Android
-# - Press i to open iOS
-# - Press w to open web
-```
-
-## 📄 Fichiers de configuration
-
-### `.env` (base de données)
 ```env
-MYSQL_ROOT_PASSWORD=Q6G3qRau5Td9C2z2I3rr
-DB_BACKEND_NAME=backend_db
-DB_BACKEND_USER=user-db
-DB_BACKEND_PASSWORD=Q6G3qRau5Td9C2z2I3rr
+DB_BACKEND_USER=homestock_user
+DB_BACKEND_PASSWORD=votre-mot-de-passe
+DB_BACKEND_NAME=homestock_db
+JWT_SECRET=une-clé-secrète-longue
+BACKEND_PORT=3000
+PGADMIN_EMAIL=admin@homestock.com
+PGADMIN_PASSWORD=votre-mot-de-passe
 ```
 
-### Backend `.env`
-```env
-DATABASE_URL=mysql://user-db:password@backend_db:3306/backend_db
-JWT_SECRET=your-secret-key
-JWT_EXPIRES_IN=1h
-```
+## Docker — commandes utiles
 
-## 🐛 Débogage
-
-### Logs
 ```bash
-# Backend
+# Voir les logs
+docker-compose logs -f
 docker-compose logs -f backend
-
-# Base de données
 docker-compose logs -f backend_db
 
-# Tous les services
-docker-compose logs -f
+# Reconstruire un seul service
+docker-compose up --build backend
+
+# Redémarrer un service
+docker-compose restart backend
+
+# Ouvrir un shell dans le conteneur backend
+docker-compose exec backend sh
+
+# Arrêter tout
+docker-compose down
+
+# Arrêter et supprimer les volumes (efface la base de données)
+docker-compose down -v
 ```
 
-### Accès à la base de données
-- **phpMyAdmin** : http://localhost:8080
-- **Utilisateur** : root
-- **Mot de passe** : Voir `.env`
+## Docker — Prisma dans les conteneurs
 
-### Reinitialiser complètement
+Les migrations s'appliquent automatiquement au démarrage du backend (`prisma migrate deploy`). Pour intervenir manuellement :
+
+```bash
+# Créer une nouvelle migration
+docker-compose exec backend npx prisma migrate dev --name nom_migration
+
+# Voir l'état des migrations
+docker-compose exec backend npx prisma migrate status
+
+# Régénérer le client Prisma
+docker-compose exec backend npx prisma generate
+```
+
+## Docker — pgAdmin
+
+Ouvrez http://localhost:8080 et connectez-vous avec les identifiants `PGADMIN_EMAIL` / `PGADMIN_PASSWORD` du `.env`.
+
+Pour ajouter le serveur PostgreSQL dans pgAdmin :
+
+| Champ    | Valeur          |
+|----------|-----------------|
+| Host     | `backend_db`    |
+| Port     | `5432`          |
+| Database | `homestock_db`  |
+| Username | `homestock_user`|
+| Password | (valeur du `.env`) |
+
+Le host est `backend_db` et non `localhost` — c'est le nom du service Docker.
+
+## Docker — problèmes courants
+
+**Le backend ne démarre pas** : PostgreSQL n'est peut-être pas encore prêt. Le `depends_on` avec `condition: service_healthy` est censé l'éviter, mais en cas de doute vérifiez les logs avec `docker-compose logs backend_db`.
+
+**Erreur de connexion à la base** : Vérifiez que la `DATABASE_URL` dans `.env` est correcte :
+```
+DATABASE_URL="postgresql://homestock_user:motdepasse@backend_db:5432/homestock_db?schema=public"
+```
+
+**Repartir de zéro** :
 ```bash
 docker-compose down -v
 docker-compose up --build
 ```
 
-## 📚 Documentation supplémentaire
+## Structure du projet
 
-Voir [Consigne.md](./Consigne.md) pour :
-- Règles de gestion du stock
-- Algorithmes FEFO
-- Validations métier
-- Cas d'usage particuliers
+```
+HomeStock/
+├── backend/        # API NestJS
+├── mobile/         # Application React Native / Expo
+├── doc/
+│   ├── BACKEND.md  # Modules, routes, schéma BDD, uploads
+│   └── MOBILE.md   # Écrans, navigation, appels API, build
+├── docker-compose.yml
+└── .env.example
+```
 
-Consultez le dossier [`doc/`](./doc/) pour la documentation détaillée :
-- [Backend](./doc/BACKEND.md) - Architecture et API
-- [Mobile](./doc/MOBILE.md) - Interface et composants
-- [Database](./doc/DATABASE.md) - Schéma et relations
+## Documentation
 
----
-
-## 👨‍💻 Développeur
-
-**Vital** - Responsable du projet complet
-
+- [Backend](./doc/BACKEND.md) — modules, routes, base de données, uploads
+- [Mobile](./doc/MOBILE.md) — écrans, navigation, appels API, build

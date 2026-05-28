@@ -1,424 +1,719 @@
-# 📚 Documentation Backend - HomeStock
+# Documentation technique - Backend
 
-## 🏗️ Architecture générale
+## Stack
 
-### Stack technologique
-- **Framework** : NestJS 10+
-- **Langage** : TypeScript 5+
-- **Base de données** : MySQL 8.0
-- **ORM** : Prisma
-- **Authentification** : JWT
-- **Validation** : Class Validator & Class Transformer
-- **API Documentation** : Swagger/OpenAPI
-- **Testing** : Jest
+- NestJS 11, TypeScript
+- PostgreSQL 16
+- Prisma 6 (ORM + migrations)
+- JWT (Passport)
+- Multer (uploads de fichiers)
+- class-validator + class-transformer (validation des DTOs)
+- Jest (tests)
+- Swagger : `/api/docs`
 
-### Structure des modules
+## Lancer le projet
 
-```
-backend/src/
-├── auth/                 # Authentification & JWT
-├── users/               # Gestion des utilisateurs
-├── homes/               # Gestion des foyers
-├── categories/          # Catégories et sous-catégories
-├── products/            # Produits
-├── product-batches/     # Unités physiques avec dates
-├── cart/                # Panier de courses
-├── recipes/             # Recettes et étapes
-├── permissions/         # Système de permissions
-├── common/              # Utilitaires partagés
-├── config/              # Configuration globale
-├── guards/              # Guards d'authentification
-├── prisma.service.ts    # Service Prisma
-├── app.controller.ts    # Contrôleur racine
-├── app.module.ts        # Module racine
-└── main.ts              # Point d'entrée
+```bash
+cd backend
+npm install
+npm run start:dev   # Démarre avec hot-reload sur le port 3000
 ```
 
-## 🔐 Authentification (Module `auth`)
+Avec Docker depuis la racine :
 
-### Structure
-```
-auth/
-├── auth.controller.ts
-├── auth.service.ts
-├── auth.module.ts
-├── jwt.strategy.ts
-├── dto/
-│   ├── login.dto.ts
-│   ├── register.dto.ts
-│   └── auth-response.dto.ts
-└── guards/
-    └── jwt.guard.ts
+```bash
+docker-compose up --build
 ```
 
-### Endpoints principaux
+## Configuration globale
 
-#### POST `/auth/register`
-Inscription utilisateur
-```json
-{
-  "email": "user@example.com",
-  "password": "SecurePass123!",
-  "firstname": "Jean",
-  "lastname": "Dupont"
-}
+**Préfixe global :** toutes les routes sont préfixées par `/api`. Exemple : `POST /auth/register` est accessible à `POST /api/auth/register`.
+
+**ValidationPipe global :**
+- `whitelist: true` — les champs non déclarés dans le DTO sont silencieusement supprimés
+- `forbidNonWhitelisted: true` — renvoie une erreur si un champ inconnu est envoyé
+- `transform: true` — convertit automatiquement les types (string → number, etc.)
+
+**Fichiers statiques :** les uploads sont servis à l'URL `/uploads/...` (ex. `/uploads/products/photo.jpg`).
+
+**Variables d'environnement :**
+
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/homestock_db
+JWT_SECRET=clé-secrète-longue-et-aléatoire
+BACKEND_PORT=3000
 ```
 
-**Réponse** :
-```json
-{
-  "access_token": "eyJhbGc...",
-  "refresh_token": "eyJhbGc...",
-  "user": { ... }
-}
+---
+
+## Authentification
+
+Toutes les routes marquées "protégée" nécessitent un header :
+
+```
+Authorization: Bearer <access_token>
 ```
 
-#### POST `/auth/login`
-Connexion utilisateur
-```json
-{
-  "email": "user@example.com",
-  "password": "SecurePass123!"
-}
-```
+Le token JWT contient `{ userId, email }` dans son payload.
 
-#### POST `/auth/refresh`
-Renouvellement du token d'accès
+Dans les contrôleurs, le décorateur `@CurrentUser()` permet de récupérer le userId directement depuis le token sans faire de requête.
 
-#### POST `/auth/logout`
-Déconnexion (révoke les tokens)
+---
 
-### JWT Strategy
-- **Header** : `Authorization: Bearer <token>`
-- **Secret** : Depuis `JWT_SECRET` .env
-- **Expires** : `JWT_EXPIRES_IN` (par défaut 1h)
-- **Payload** : `{ userId, email, homeId }`
+## Module Auth
 
-## 👥 Module Utilisateurs (`users`)
+### POST `/auth/register`
 
-### Structure
-```
-users/
-├── users.controller.ts
-├── users.service.ts
-├── users.module.ts
-├── entities/
-│   └── user.entity.ts
-└── dto/
-    ├── create-user.dto.ts
-    ├── update-user.dto.ts
-    └── update-password.dto.ts
-```
+Crée un compte utilisateur.
 
-### Endpoints
-
-#### GET `/users/:id`
-Récupère les infos d'un utilisateur
-
-#### PATCH `/users/:id`
-Met à jour les infos d'un utilisateur
+**Body :**
 ```json
 {
   "firstname": "Jean",
+  "lastname": "Dupont",
+  "mail": "jean@example.com",
+  "password": "motdepasse8chars",
+  "picture": "url-optionnelle"
+}
+```
+
+Contraintes : `password` minimum 8 caractères, `mail` doit être un email valide. Si l'email est déjà utilisé → `409 Conflict`.
+
+**Réponse :**
+```json
+{
+  "access_token": "eyJ...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "user": {
+    "id": 1,
+    "firstname": "Jean",
+    "lastname": "Dupont",
+    "mail": "jean@example.com",
+    "picture": null
+  }
+}
+```
+
+### POST `/auth/login`
+
+**Body :**
+```json
+{
+  "mail": "jean@example.com",
+  "password": "motdepasse8chars"
+}
+```
+
+Même réponse que le register. Si email inconnu ou mot de passe incorrect → `401 Unauthorized`.
+
+### GET `/auth/profile` — protégée
+
+Retourne les données de l'utilisateur connecté (extrait du JWT).
+
+```json
+{
+  "id": 1,
+  "firstname": "Jean",
+  "lastname": "Dupont",
+  "mail": "jean@example.com",
+  "picture": null
+}
+```
+
+---
+
+## Module Users — protégé
+
+### GET `/users`
+
+Retourne tous les utilisateurs (sans les mots de passe).
+
+### GET `/users/search?mail=jean@example.com`
+
+Cherche un utilisateur par email exact. `404` si introuvable.
+
+### GET `/users/:id`
+
+Retourne un utilisateur par son ID. `404` si introuvable.
+
+### GET `/users/:id/permissions`
+
+Retourne les permissions de l'utilisateur (liste de ses foyers et rôles).
+
+```json
+[
+  {
+    "id": 3,
+    "userId": 1,
+    "homeId": 2,
+    "type": "owner",
+    "home": { "id": 2, "name": "Chez Dupont" }
+  }
+]
+```
+
+### PATCH `/users/:id`
+
+Met à jour les champs du profil. Tous les champs sont optionnels. Si `mail` est changé et qu'il existe déjà → `409`. Si `password` est fourni, il est hashé automatiquement.
+
+**Body (partiel) :**
+```json
+{
+  "firstname": "Jean-Pierre",
   "lastname": "Martin"
 }
 ```
 
-#### POST `/users/:id/change-password`
-Change le mot de passe
+### PATCH `/users/:id/avatar`
+
+Upload d'avatar. Requête `multipart/form-data` avec le champ `picture`.
+Formats acceptés : jpg, jpeg, png, gif. Max 5 Mo.
+Stocké dans `public/uploads/avatars/`.
+
+Retourne le user mis à jour.
+
+### DELETE `/users/:id`
+
+Supprime l'utilisateur. `404` si introuvable.
+
+---
+
+## Module Homes — protégé
+
+### POST `/homes`
+
+Crée un foyer. L'utilisateur créateur devient automatiquement `owner`.
+
+**Body :**
 ```json
 {
-  "currentPassword": "OldPass123!",
-  "newPassword": "NewPass456!"
+  "name": "Chez Dupont",
+  "userId": 1
 }
 ```
 
-#### POST `/users/:id/avatar`
-Upload un avatar (multipart/form-data)
+### GET `/homes`
 
-## 🏠 Module Foyers (`homes`)
+Retourne tous les foyers (ordre par ID croissant).
 
-### Endpoints
+### GET `/homes/:id`
 
-#### POST `/homes`
-Crée un nouveau foyer
+Retourne un foyer spécifique.
+
+### GET `/homes/:id/users`
+
+Retourne les membres du foyer avec leur rôle.
+
+```json
+[
+  {
+    "id": 1,
+    "firstname": "Jean",
+    "lastname": "Dupont",
+    "mail": "jean@example.com",
+    "permissionType": "owner",
+    "permissionId": 3
+  }
+]
+```
+
+### GET `/homes/:id/categories`
+
+Retourne les catégories du foyer.
+
+### GET `/homes/:id/products`
+
+Retourne tous les produits du foyer avec leur sous-catégorie et catégorie parente.
+
+### PATCH `/homes/:id`
+
+Met à jour le nom du foyer.
+
+### DELETE `/homes/:id`
+
+Supprime le foyer et toutes ses données en cascade.
+
+---
+
+## Module Permissions — protégé
+
+Les types de permission valides : `owner`, `read`, `read-write`.
+
+### POST `/permissions`
+
+**Body :**
 ```json
 {
-  "name": "Mon Foyer"
+  "userId": 1,
+  "homeId": 2,
+  "type": "read-write"
 }
 ```
 
-#### GET `/homes`
-Liste tous les foyers de l'utilisateur
+Si la permission existe déjà pour ce couple userId/homeId → `409 Conflict`.
 
-#### GET `/homes/:id`
-Récupère un foyer spécifique
+### GET `/permissions/home/:homeId`
 
-#### PATCH `/homes/:id`
-Met à jour un foyer
+Toutes les permissions d'un foyer (avec les données user associées).
 
-#### DELETE `/homes/:id`
-Supprime un foyer
+### GET `/permissions/user/:userId`
 
-#### POST `/homes/:id/members`
-Ajoute un membre (via lien d'invitation)
+Toutes les permissions d'un utilisateur (avec les données home associées).
 
-## 🏷️ Module Catégories (`categories`)
+### GET `/permissions/:id`
 
-### Hiérarchie
+Une permission par son ID.
+
+### PATCH `/permissions/:id`
+
+Modifie le type de permission (`type` uniquement, pas les IDs).
+
+### DELETE `/permissions/:id`
+
+Supprime la permission — l'utilisateur perd l'accès au foyer.
+
+---
+
+## Module Categories — protégé
+
+### POST `/categories`
+
+Requête `multipart/form-data`. Champ fichier : `picture` (optionnel).
+Formats : jpg, jpeg, png, gif, svg. Max 5 Mo. Stocké dans `public/uploads/categories/`.
+
+**Champs de formulaire :**
 ```
-Catégories → Sous-catégories → Produits → Unités(product_batches)
+name: string
+homeId: number (en string dans le formData, converti automatiquement)
+picture: file (optionnel)
 ```
 
-### Structure
-```
-categories/
-├── categories.service.ts
-├── categories.controller.ts
-├── dto/
-│   ├── create-category.dto.ts
-│   ├── update-category.dto.ts
-│   ├── create-subcategory.dto.ts
-│   └── update-subcategory.dto.ts
-└── entities/
-    ├── category.entity.ts
-    └── subcategory.entity.ts
-```
+Retourne la catégorie créée.
 
-### Endpoints Catégories
+### GET `/categories/home/:homeId`
 
-#### POST `/categories`
-Crée une catégorie
+Toutes les catégories d'un foyer avec leurs sous-catégories.
+
+### GET `/categories/:id`
+
+Une catégorie avec ses sous-catégories.
+
+### PATCH `/categories/:id`
+
+Requête `multipart/form-data`. Champs `name` et/ou `picture` (optionnels).
+
+### DELETE `/categories/:id`
+
+Supprime la catégorie et ses sous-catégories en cascade.
+
+---
+
+## Module Subcategories — protégé
+
+### POST `/subcategories`
+
+**Body :**
 ```json
 {
-  "homeId": 1,
-  "name": "Féculents",
-  "picture": "/uploads/categories/feculent.jpg"
-}
-```
-
-#### GET `/categories/home/:homeId`
-Liste toutes les catégories d'un foyer
-
-#### PATCH `/categories/:id`
-Met à jour une catégorie
-
-#### DELETE `/categories/:id`
-Supprime une catégorie
-
-### Endpoints Sous-catégories
-
-#### POST `/categories/:id/subcategories`
-Crée une sous-catégorie
-```json
-{
+  "categoryId": 1,
   "name": "Pâtes"
 }
 ```
 
-#### GET `/categories/:id/subcategories`
-Liste les sous-catégories
+### GET `/subcategories/category/:categoryId`
 
-#### PATCH `/categories/:categoryId/subcategories/:id`
-Met à jour une sous-catégorie
+Toutes les sous-catégories d'une catégorie.
 
-#### DELETE `/categories/:categoryId/subcategories/:id`
-Supprime une sous-catégorie
+### GET `/subcategories/:id`
 
-## 📦 Module Produits (`products`)
+Une sous-catégorie avec sa catégorie parente.
 
-### Structure
+### PATCH `/subcategories/:id`
+
+**Body :** `{ "name": "Nouveau nom" }`
+
+### DELETE `/subcategories/:id`
+
+---
+
+## Module Products — routes non protégées
+
+### POST `/products`
+
+Requête `multipart/form-data`. Champ fichier : `image` (optionnel).
+Formats : jpg, jpeg, png, gif. Max 5 Mo. Stocké dans `public/uploads/products/`.
+
+**Champs :**
 ```
-products/
-├── products.service.ts
-├── products.controller.ts
-├── dto/
-│   ├── create-product.dto.ts
-│   └── update-product.dto.ts
-└── entities/
-    └── product.entity.ts
+name: string
+homeId: number
+subcategoryId: number
+mass: number (optionnel, en grammes)
+liquid: number (optionnel, en ml)
+image: file (optionnel)
 ```
 
-### Endpoints
-
-#### POST `/products`
-Crée un produit
+**Réponse :**
 ```json
 {
-  "homeId": 1,
+  "id": 5,
+  "homeId": 2,
   "subcategoryId": 3,
   "name": "Tagliatelles Barilla 500g",
-  "picture": "/uploads/products/tagliatelle.jpg",
+  "picture": "/uploads/products/abc123.jpg",
   "mass": 500,
-  "liquid": null
-}
-```
-
-#### GET `/products/subcategory/:subcategoryId`
-Liste les produits d'une sous-catégorie
-
-#### PATCH `/products/:id`
-Met à jour un produit
-
-#### DELETE `/products/:id`
-Supprime un produit
-
-## 📊 Module Unités Produits (`product-batches`)
-
-### Concept
-Chaque `product_batch` représente **une unité physique réelle** avec sa propre date d'expiration.
-
-### Structure
-```
-product-batches/
-├── product-batches.service.ts
-├── product-batches.controller.ts
-├── dto/
-│   ├── create-product-batch.dto.ts
-│   └── update-product-batch.dto.ts
-└── entities/
-    └── product-batch.entity.ts
-```
-
-### Endpoints
-
-#### POST `/product-batches`
-Ajoute une unité au stock
-```json
-{
-  "productId": 5,
-  "homeId": 1,
-  "expirationDate": "2025-12-31",
-  "purchaseDate": "2025-01-01"
-}
-```
-
-#### GET `/products/:id/batches`
-Liste les unités d'un produit
-
-#### PATCH `/product-batches/:id`
-Met à jour une unité (changer date expiration)
-
-#### DELETE `/product-batches/:id`
-Supprime une unité du stock
-
-## 🛒 Module Panier (`cart`)
-
-### Structure
-```
-cart/
-├── cart.service.ts
-├── cart.controller.ts
-├── dto/
-│   ├── add-to-cart.dto.ts
-│   ├── remove-from-cart.dto.ts
-│   └── validate-cart.dto.ts
-└── entities/
-    └── cart.entity.ts
-```
-
-### Concept
-- **Un seul panier par foyer**
-- Contient des produits (types) pas des unités
-- Validation crée les unités dans `product_batches`
-
-### Endpoints
-
-#### GET `/carts/home/:homeId`
-Récupère le panier du foyer
-
-#### POST `/carts/home/:homeId/add`
-Ajoute un produit au panier
-```json
-{
-  "productId": 5,
-  "quantity": 2
-}
-```
-
-#### POST `/carts/home/:homeId/remove`
-Retire un produit du panier
-```json
-{
-  "productId": 5
-}
-```
-
-#### POST `/carts/home/:homeId/validate`
-Valide le panier et crée les unités
-```json
-{
-  "items": [
+  "liquid": null,
+  "stockCount": 3,
+  "needsToBuy": false,
+  "subcategory": {
+    "id": 3,
+    "name": "Pâtes",
+    "categoryId": 1,
+    "categoryName": "Féculents"
+  },
+  "productBatches": [
     {
+      "id": 10,
       "productId": 5,
-      "quantity": 2,
-      "expirationDate": "2025-12-31"
+      "homeId": 2,
+      "expirationDate": "2025-12-31",
+      "daysUntilExpiration": 217,
+      "isExpired": false,
+      "expiringSoon": false
     }
   ]
 }
 ```
 
-#### POST `/carts/home/:homeId/clear`
-Vide complètement le panier
+`stockCount` = nombre d'unités disponibles (calculé dynamiquement depuis `productBatches`).
+`needsToBuy` = true si `stockCount < 2`.
 
-## 👨‍🍳 Module Recettes (`recipes`)
+### GET `/products?homeId=2`
 
-### Structure
-```
-recipes/
-├── recipes.service.ts
-├── recipes.controller.ts
-├── dto/
-│   ├── create-recipe.dto.ts
-│   ├── update-recipe.dto.ts
-│   ├── add-ingredient.dto.ts
-│   └── add-step.dto.ts
-└── entities/
-    ├── recipe.entity.ts
-    ├── recipe-ingredient.entity.ts
-    └── recipe-step.entity.ts
-```
+Tous les produits, filtrés optionnellement par foyer.
 
-### Endpoints
+### GET `/products/to-buy/:homeId`
 
-#### POST `/recipes`
-Crée une recette (sans ingrédients/étapes)
+Produits dont `needsToBuy === true` (stock inférieur à 2 unités).
+
+### GET `/products/subcategory/:subcategoryId`
+
+Produits d'une sous-catégorie.
+
+### GET `/products/:id`
+
+Un produit avec toutes ses données.
+
+### PATCH `/products/:id`
+
+Tous les champs sont optionnels. Si `subcategoryId` est fourni, la sous-catégorie est vérifiée.
+
+### DELETE `/products/:id`
+
+Conditions : le produit ne doit pas avoir de batches ni être dans un panier. Sinon → `400 Bad Request`.
+
+---
+
+## Module Product Batches — routes non protégées
+
+Un `ProductBatch` est une unité physique réelle avec une date d'expiration. C'est ce qui constitue le stock.
+
+### POST `/product-batches`
+
+Ajoute une unité au stock.
+
+**Body :**
 ```json
 {
-  "homeId": 1,
-  "name": "Pâtes à la Carbonara",
-  "description": "Recette italienne classique",
-  "picture": "/uploads/recipes/carbonara.jpg"
+  "productId": 5,
+  "homeId": 2,
+  "expirationDate": "2025-12-31"
 }
 ```
 
-#### GET `/recipes/home/:homeId`
-Liste les recettes d'un foyer
+`expirationDate` est optionnel (format `YYYY-MM-DD`). `null` si le produit n'a pas de date d'expiration.
 
-#### GET `/recipes/:id`
-Récupère les détails complets d'une recette (avec ingrédients et étapes)
-
-#### PATCH `/recipes/:id`
-Met à jour une recette
-
-#### DELETE `/recipes/:id`
-Supprime une recette
-
-#### POST `/recipes/:id/ingredients`
-Ajoute un ingrédient
+**Réponse :**
 ```json
 {
-  "productId": 8,
+  "id": 12,
+  "productId": 5,
+  "homeId": 2,
+  "expirationDate": "2025-12-31",
+  "daysUntilExpiration": 217,
+  "isExpired": false,
+  "expiringSoon": false,
+  "product": { "id": 5, "name": "Tagliatelles Barilla 500g", "picture": "..." }
+}
+```
+
+`expiringSoon` = true si la date d'expiration est dans moins de 7 jours.
+
+### POST `/product-batches/bulk`
+
+Ajoute plusieurs unités d'un coup (pour un achat de plusieurs exemplaires).
+
+**Body :**
+```json
+{
+  "productId": 5,
+  "homeId": 2,
+  "quantity": 3,
+  "expirationDate": "2025-12-31"
+}
+```
+
+Retourne un tableau de `ProductBatch`.
+
+### POST `/product-batches/consume`
+
+Consomme des unités selon la règle FEFO (First Expired, First Out) : les unités dont la date d'expiration est la plus proche sont supprimées en premier.
+
+**Body :**
+```json
+{
+  "productId": 5,
+  "homeId": 2,
+  "quantity": 2
+}
+```
+
+Si le stock est insuffisant → `400 Bad Request`. Retourne `204 No Content`.
+
+### GET `/product-batches?homeId=2`
+
+Toutes les unités, triées par date d'expiration (la plus proche en premier — ordre FEFO).
+
+### GET `/product-batches/product/:productId`
+
+Toutes les unités d'un produit.
+
+### GET `/product-batches/expired/:homeId`
+
+Unités dont la date d'expiration est dépassée.
+
+### GET `/product-batches/expiring-soon/:homeId`
+
+Unités qui expirent dans les 7 prochains jours.
+
+### GET `/product-batches/:id`
+
+Une unité par son ID.
+
+### PATCH `/product-batches/:id`
+
+Modifie la date d'expiration d'une unité.
+
+**Body :** `{ "expirationDate": "2026-01-15" }`
+
+### DELETE `/product-batches/:id`
+
+Supprime (consomme manuellement) une unité. Retourne `204 No Content`.
+
+---
+
+## Module Cart — routes non protégées
+
+Un seul panier par foyer. Il est créé automatiquement à la première requête si il n'existe pas.
+
+### GET `/cart/:homeId`
+
+Retourne le panier du foyer avec ses produits.
+
+```json
+{
+  "id": 1,
+  "homeId": 2,
+  "products": [
+    {
+      "id": 7,
+      "productId": 5,
+      "productName": "Tagliatelles Barilla 500g",
+      "productPicture": "/uploads/products/abc.jpg",
+      "quantity": 2,
+      "checked": false,
+      "subcategoryId": 3,
+      "subcategoryName": "Pâtes"
+    }
+  ],
+  "totalItems": 2,
+  "uncheckedItems": 2
+}
+```
+
+### POST `/cart/:homeId/products`
+
+Ajoute un produit au panier. Si le produit est déjà présent, la quantité est augmentée.
+
+**Body :**
+```json
+{
+  "productId": 5,
+  "quantity": 1
+}
+```
+
+`quantity` vaut 1 par défaut si absent. Retourne le panier mis à jour.
+
+### PATCH `/cart/:homeId/products/:cartProductId`
+
+Met à jour la quantité ou l'état coché d'un produit dans le panier.
+
+**Body (partiel) :**
+```json
+{
+  "quantity": 3,
+  "checked": true
+}
+```
+
+### DELETE `/cart/:homeId/products/:cartProductId`
+
+Retire un produit du panier. Retourne le panier mis à jour.
+
+### DELETE `/cart/:homeId?onlyChecked=true`
+
+Vide le panier. Avec `onlyChecked=true`, supprime uniquement les produits cochés.
+
+---
+
+## Module Invite Links — protégé (sauf /use)
+
+### POST `/invite-links`
+
+Crée un lien d'invitation valable 7 jours.
+
+**Body :**
+```json
+{
+  "homeId": 2,
+  "permissionType": "read-write"
+}
+```
+
+`permissionType` accepte `read` ou `read-write`.
+
+**Réponse :**
+```json
+{
+  "id": 1,
+  "homeId": 2,
+  "link": "A3xKp9mQrTwZ2nByL7dHj0cVs",
+  "permissionType": "read-write",
+  "expirationDate": "2025-06-28T00:00:00.000Z",
+  "createdAt": "2025-05-28T00:00:00.000Z"
+}
+```
+
+`link` est un code de 25 caractères.
+
+### GET `/invite-links/home/:homeId`
+
+Retourne les liens actifs (non expirés) du foyer.
+
+### POST `/invite-links/use` — non protégée
+
+Permet à un utilisateur de rejoindre un foyer via un code.
+
+**Body :**
+```json
+{
+  "link": "A3xKp9mQrTwZ2nByL7dHj0cVs",
+  "userId": 1
+}
+```
+
+Si le lien est expiré → `400`. Si l'utilisateur est déjà membre → `409`. Sinon, crée la permission et la retourne.
+
+### DELETE `/invite-links/:id`
+
+Supprime un lien d'invitation. Retourne `204 No Content`.
+
+### DELETE `/invite-links/clean/expired`
+
+Supprime tous les liens expirés du système. Retourne `{ "count": 3 }`.
+
+---
+
+## Module Recipes — routes non protégées
+
+### POST `/recipes`
+
+Requête `multipart/form-data`. Champ fichier : `image` (optionnel).
+Formats : jpg, jpeg, png, gif, webp. Max 5 Mo. Stocké dans `public/uploads/recipes/`.
+
+**Champs :**
+```
+name: string
+description: string
+homeId: number
+image: file (optionnel)
+tagIds: number[] (optionnel)
+```
+
+La recette est créée sans ingrédients ni étapes — on les ajoute ensuite.
+
+**Réponse :**
+```json
+{
+  "id": 3,
+  "homeId": 2,
+  "name": "Pâtes à la carbonara",
+  "picture": "/uploads/recipes/xyz.jpg",
+  "description": "Recette italienne classique",
+  "ingredients": [],
+  "steps": [],
+  "tags": [],
+  "createdAt": "2025-05-28T10:00:00.000Z",
+  "updatedAt": "2025-05-28T10:00:00.000Z"
+}
+```
+
+### GET `/recipes?homeId=2`
+
+`homeId` est obligatoire. Retourne toutes les recettes du foyer triées par nom.
+
+### GET `/recipes/:id`
+
+Retourne la recette complète avec ingrédients, étapes et tags.
+
+### PATCH `/recipes/:id`
+
+Requête `multipart/form-data`. Champs `name`, `description`, `picture`, `tagIds` optionnels.
+
+### DELETE `/recipes/:id`
+
+Supprime la recette et toutes ses données en cascade. Retourne les données de la recette supprimée.
+
+### POST `/recipes/:recipeId/ingredients`
+
+Ajoute un ingrédient à la recette.
+
+**Body :**
+```json
+{
+  "productId": 5,
   "quantityNeeded": 500,
   "multipliable": true
 }
 ```
 
-#### DELETE `/recipes/:id/ingredients/:productId`
-Retire un ingrédient
+`quantityNeeded` est optionnel. `multipliable: true` signifie que la quantité sera multipliée par le nombre de portions côté mobile. Si le produit est déjà ingrédient de cette recette → `400 Bad Request`.
 
-#### POST `/recipes/:id/steps`
-Ajoute une étape
+### PATCH `/recipes/:recipeId/ingredients/:productId`
+
+Modifie `quantityNeeded` et/ou `multipliable` d'un ingrédient.
+
+### DELETE `/recipes/:recipeId/ingredients/:productId`
+
+Retire l'ingrédient de la recette.
+
+### POST `/recipes/:recipeId/steps`
+
+Ajoute une étape.
+
+**Body :**
 ```json
 {
   "stepNumber": 1,
@@ -426,141 +721,157 @@ Ajoute une étape
 }
 ```
 
-#### DELETE `/recipes/:id/steps/:stepNumber`
-Retire une étape
+`stepNumber` doit être unique dans la recette. Si le numéro existe déjà → `400`.
 
-### Algorithme FEFO (First Expired, First Out)
-Lors de la consommation d'ingrédients d'une recette, les unités sont consommées dans l'ordre de leurs dates d'expiration (unités les plus anciennes d'abord).
+### PATCH `/recipes/:recipeId/steps/:stepNumber`
 
-## 🔐 Module Permissions
+**Body :** `{ "content": "Nouveau contenu" }`
 
-### Rôles
-- **owner** : Propriétaire du foyer, accès complet
-- **member** : Membre du foyer, accès limité
+### DELETE `/recipes/:recipeId/steps/:stepNumber`
 
-### Endpoints
+---
 
-#### GET `/permissions/home/:homeId`
-Liste les permissions du foyer
+## Schéma de base de données (Prisma)
 
-#### PATCH `/permissions/:homeId/user/:userId`
-Modifie le rôle d'un utilisateur
+```
+User
+  id            Int       (PK, autoincrement)
+  firstname     String
+  lastname      String
+  mail          String    (unique)
+  password      String    (hashé bcrypt)
+  picture       String?
 
-#### POST `/permissions/home/:homeId/invite`
-Génère un lien d'invitation
-```json
-{
-  "expiresInDays": 7
-}
+Home
+  id            Int       (PK, autoincrement)
+  name          String
+
+Permission
+  id            Int       (PK, autoincrement)
+  userId        Int       (FK → User)
+  homeId        Int       (FK → Home)
+  type          String    (owner | read | read-write)
+  @@unique([userId, homeId])
+
+InviteLink
+  id              Int       (PK, autoincrement)
+  homeId          Int       (FK → Home, cascade delete)
+  link            String    (unique, max 25 chars)
+  permissionType  String    (default: "read-write")
+  expirationDate  DateTime
+  createdAt       DateTime  (default: now)
+
+Category
+  id        Int     (PK, autoincrement)
+  homeId    Int     (FK → Home)
+  name      String
+  picture   String
+
+Subcategory
+  id          Int     (PK, autoincrement)
+  categoryId  Int     (FK → Category)
+  name        String
+
+Product
+  id              Int     (PK, autoincrement)
+  homeId          Int     (FK → Home)
+  subcategoryId   Int     (FK → Subcategory)
+  name            String
+  picture         String
+  mass            Int?    (en grammes)
+  liquid          Int?    (en ml)
+
+ProductBatch
+  id              Int       (PK, autoincrement)
+  productId       Int       (FK → Product)
+  homeId          Int       (FK → Home)
+  expirationDate  DateTime? (date seulement, pas d'heure)
+  @@index([homeId, productId])
+
+Cart
+  id      Int   (PK, autoincrement)
+  homeId  Int   (unique → 1 panier par foyer)
+
+CartProduct
+  id          Int     (PK, autoincrement)
+  cartId      Int     (FK → Cart)
+  productId   Int     (FK → Product)
+  quantity    Int     (default: 1)
+  checked     Boolean (default: false)
+  @@unique([cartId, productId])
+
+Recipe
+  id          Int       (PK, autoincrement)
+  homeId      Int       (FK → Home)
+  name        String
+  picture     String
+  description String
+  createdAt   DateTime  (default: now)
+  updatedAt   DateTime  (@updatedAt)
+
+RecipeProduct
+  id              Int     (PK, autoincrement)
+  recipeId        Int     (FK → Recipe, cascade delete)
+  productId       Int     (FK → Product)
+  quantityNeeded  Int?
+  multipliable    Boolean
+  @@unique([recipeId, productId])
+
+RecipeStep
+  id          Int     (PK, autoincrement)
+  recipeId    Int     (FK → Recipe)
+  stepNumber  Int
+  content     String
+  @@unique([recipeId, stepNumber])
+
+RecipeTag
+  id    Int     (PK, autoincrement)
+  name  String  (unique)
+
+RecipeRecipeTag
+  id        Int   (PK, autoincrement)
+  recipeId  Int   (FK → Recipe)
+  tagId     Int   (FK → RecipeTag)
+  @@unique([recipeId, tagId])
 ```
 
-#### POST `/permissions/home/:homeId/join`
-Rejoint un foyer via lien d'invitation
-```json
-{
-  "inviteCode": "ABC123XYZ"
-}
-```
+---
 
-## 🛡️ Guards et Middlewares
+## Uploads de fichiers
 
-### JwtGuard
-Protège les routes en vérifiant le JWT. À utiliser avec `@UseGuards(JwtGuard)`
+| Type de fichier  | Endpoint                  | Champ    | Dossier de stockage               |
+|------------------|---------------------------|----------|-----------------------------------|
+| Avatar           | PATCH `/users/:id/avatar` | `picture`| `public/uploads/avatars/`         |
+| Image catégorie  | POST/PATCH `/categories`  | `picture`| `public/uploads/categories/`     |
+| Image produit    | POST/PATCH `/products`    | `image`  | `public/uploads/products/`       |
+| Image recette    | POST/PATCH `/recipes`     | `image`  | `public/uploads/recipes/`        |
 
-### Décorateurs personnalisés
-- `@GetUser()` - Récupère l'utilisateur actuel depuis le JWT
-- `@GetHome()` - Récupère l'ID du foyer depuis le JWT
+Les fichiers sont accessibles via `http://localhost:3000/uploads/<dossier>/<nom-du-fichier>`.
 
-## ⚙️ Configuration
+---
 
-### Environment Variables
-```env
-DATABASE_URL=mysql://user:password@localhost:3306/database
-JWT_SECRET=votre-clé-secrète-très-sécurisée
-JWT_EXPIRES_IN=1h
-JWT_REFRESH_EXPIRES_IN=7d
-NODE_ENV=development
-PORT=3000
-```
+## Gestion des erreurs
 
-### Swagger/OpenAPI
-Accédez à `http://localhost:3000/api/docs` pour explorer l'API complète en mode interactif.
+Un filtre global (`AllExceptionsFilter`) intercepte toutes les exceptions et retourne une réponse standardisée. Un intercepteur de logs (`LoggingInterceptor`) trace chaque requête avec méthode, URL, statut et temps de réponse.
 
-## 🧪 Testing
+---
 
-### Lancer les tests
+## Tests
+
 ```bash
-npm run test              # Tests unitaires
-npm run test:watch       # Mode watch
-npm run test:cov         # Avec couverture
-npm run test:e2e         # Tests e2e
+npm run test          # Tests unitaires
+npm run test:e2e      # Tests end-to-end
+npm run test:cov      # Couverture de code
 ```
 
-### Structure des tests
-```
-src/
-├── users/
-│   └── users.service.spec.ts
-├── cart/
-│   └── cart.service.spec.ts
-└── recipes/
-    └── recipes.service.spec.ts
-```
+---
 
-## 📤 Upload de fichiers
+## Commandes Prisma utiles
 
-### Avatars utilisateur
-**Endpoint** : `POST /users/:id/avatar`
-- **Format** : multipart/form-data
-- **Dossier** : `public/uploads/avatars/`
-- **Max size** : 5MB
-- **Types** : jpg, jpeg, png
-
-### Images de catégories
-**Endpoint** : Lors de la création
-- **Format** : URL ou fichier
-- **Dossier** : `public/uploads/categories/`
-
-### Images de produits
-**Endpoint** : Lors de la création
-- **Format** : URL ou fichier
-- **Dossier** : `public/uploads/products/`
-
-### Images de recettes
-**Endpoint** : `PATCH /recipes/:id`
-- **Format** : multipart/form-data
-- **Dossier** : `public/uploads/recipes/`
-
-## 🚀 Déploiement
-
-### Production Build
 ```bash
-npm run build
-npm run start:prod
-```
-
-### Docker
-```bash
-docker build -f Dockerfile -t homestock-backend .
-docker run -p 3000:3000 -e DATABASE_URL=... homestock-backend
-```
-
-## 📝 Conventions de code
-
-### Nommage
-- Services : `*Service` (ex: `UsersService`)
-- Contrôleurs : `*Controller` (ex: `UsersController`)
-- DTOs : `*Dto` (ex: `CreateUserDto`)
-- Entités : `*Entity` (ex: `UserEntity`)
-
-### Structure des fichiers
-- Un module = un dossier avec `*.service.ts`, `*.controller.ts`, `*.module.ts`
-- Les DTOs dans un dossier `dto/`
-- Les entités dans un dossier `entities/`
-
-### Logs
-```typescript
-this.logger.log('Message d'info');
-this.logger.warn('Avertissement');
-this.logger.error('Erreur', new Error());
+npx prisma migrate dev        # Crée et applique une nouvelle migration en dev
+npx prisma migrate deploy     # Applique les migrations en production
+npx prisma studio             # Interface graphique pour explorer les données
+npx prisma generate           # Régénère le client Prisma (après modification du schéma)
+npm run seed                  # Peuple la base avec des données de test
 ```
