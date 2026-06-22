@@ -61,7 +61,7 @@ Pour se connecter à la base de données dans pgAdmin :
    - **Port** : 5432
    - **Database** : homestock_db
    - **Username** : homestock_user
-   - **Password** : Q6G3qRau5Td9C2z2I3rr
+   - **Password** : (valeur de `DB_BACKEND_PASSWORD` dans le `.env`)
 
 ## Commandes utiles
 
@@ -149,7 +149,7 @@ Les variables sont définies dans le fichier `.env` à la racine :
 
 ```env
 DB_BACKEND_USER=homestock_user
-DB_BACKEND_PASSWORD=Q6G3qRau5Td9C2z2I3rr
+DB_BACKEND_PASSWORD=votre-mot-de-passe
 DB_BACKEND_NAME=homestock_db
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
 PGADMIN_EMAIL=admin@homestock.com

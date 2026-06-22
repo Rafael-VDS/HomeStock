@@ -149,6 +149,8 @@ HomeStock/
 ├── mobile/         # Application React Native / Expo
 ├── doc/
 │   ├── BACKEND.md  # Modules, routes, schéma BDD, uploads
+│   ├── DATABASE.md # Schéma SQL, relations, requêtes courantes
+│   ├── DOCKER.md   # Services, commandes, pgAdmin
 │   └── MOBILE.md   # Écrans, navigation, appels API, build
 ├── docker-compose.yml
 └── .env.example
@@ -157,4 +159,6 @@ HomeStock/
 ## Documentation
 
 - [Backend](./doc/BACKEND.md) — modules, routes, base de données, uploads
+- [Base de données](./doc/DATABASE.md) — schéma SQL, relations, requêtes courantes
+- [Docker](./doc/DOCKER.md) — services, commandes, pgAdmin
 - [Mobile](./doc/MOBILE.md) — écrans, navigation, appels API, build

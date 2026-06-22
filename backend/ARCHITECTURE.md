@@ -211,27 +211,40 @@ POST /api/products
 }
 ```
 
-## 🔄 Prochaines étapes recommandées
+## ✅ Modules implémentés
 
-1. **Créer les autres modules** :
-   - Users
-   - Homes
-   - Categories
-   - Recipes
-   - Carts
+| Module            | Description                                      |
+|-------------------|--------------------------------------------------|
+| `auth`            | Inscription, connexion, profil (JWT)             |
+| `users`           | Gestion des utilisateurs et avatars              |
+| `homes`           | Foyers partagés entre utilisateurs               |
+| `permissions`     | Droits d'accès (`owner`, `read`, `read-write`)   |
+| `invite-links`    | Liens d'invitation temporaires (7 jours)         |
+| `categories`      | Catégories d'inventaire avec image               |
+| `subcategories`   | Sous-catégories imbriquées dans les catégories   |
+| `products`        | Catalogue de produits par foyer                  |
+| `product-batches` | Unités physiques avec dates d'expiration (FEFO)  |
+| `cart`            | Panier de courses (1 panier par foyer)           |
+| `recipes`         | Recettes avec ingrédients, étapes et tags        |
 
-2. **Ajouter l'authentification** :
-   - Module Auth avec JWT
-   - Guards pour protéger les routes
-   - Decorator `@CurrentUser()`
+## 🔄 Points d'amélioration possibles
 
-3. **Tests** :
+1. **Tests** :
    - Unit tests pour les services
    - E2E tests pour les controllers
+   - Couverture de code (`npm run test:cov`)
 
-4. **Database** :
-   - Créer la première migration Prisma
-   - Seed de données de test
+2. **Sécurité** :
+   - Guards pour vérifier le ownership via les permissions
+   - Rate limiting sur les routes d'authentification
+
+3. **Performance** :
+   - Mise en cache des requêtes fréquentes (catégories, produits)
+   - Pagination sur les listes longues
+
+4. **Production** :
+   - Stockage des images sur un CDN (AWS S3, Cloudinary)
+   - Variables d'environnement validées au démarrage
 
 ## 🎨 Commandes utiles
 

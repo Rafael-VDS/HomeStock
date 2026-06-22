@@ -1,50 +1,43 @@
-# Welcome to your Expo app 👋
+# HomeStock — Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Application mobile du projet HomeStock, construite avec React Native et Expo.
 
-## Get started
+## Stack
 
-1. Install dependencies
+- React Native 0.81, TypeScript
+- Expo Router 6 (navigation basée sur les fichiers)
+- Axios (requêtes HTTP avec intercepteur JWT)
+- Context API + AsyncStorage (état global et persistance locale)
+- Expo Image Picker (sélection de photos)
+- Ionicons (icônes)
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Lancer l'application
 
 ```bash
-npm run reset-project
+npm install
+npm start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Expo affiche un QR code. Scannez-le avec l'app **Expo Go** sur votre téléphone.
+Ou appuyez sur `a` pour Android / `i` pour iOS.
 
-## Learn more
+Avant de lancer, vérifiez que l'URL dans `config/config.ts` correspond à l'adresse IP de la machine qui fait tourner le backend :
 
-To learn more about developing your project with Expo, look at the following resources:
+```typescript
+export const API_URL = 'http://192.168.X.X:3000';
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Sur émulateur Android, utilisez `10.0.2.2` à la place de `localhost`.
 
-## Join the community
+## Build
 
-Join our community of developers creating universal apps.
+Pour générer un APK Android ou une IPA iOS via EAS :
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npx eas build --platform android --local
+npx eas build --platform ios --local
+```
+
+## Documentation
+
+- [Écrans, navigation, appels API, build](../doc/MOBILE.md)
