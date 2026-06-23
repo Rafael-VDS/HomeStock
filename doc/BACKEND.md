@@ -167,7 +167,7 @@ Met à jour les champs du profil. Tous les champs sont optionnels. Si `mail` est
 
 ### PATCH `/users/:id/avatar`
 
-Upload d'avatar. Requête `multipart/form-data` avec le champ `picture`.
+Upload d'avatar. Requête `multipart/form-data` avec le champ `file`.
 Formats acceptés : jpg, jpeg, png, gif. Max 5 Mo.
 Stocké dans `public/uploads/avatars/`.
 
@@ -612,7 +612,7 @@ Crée un lien d'invitation valable 7 jours.
 
 Retourne les liens actifs (non expirés) du foyer.
 
-### POST `/invite-links/use` — non protégée
+### POST `/invite-links/use` — protégée
 
 Permet à un utilisateur de rejoindre un foyer via un code.
 
