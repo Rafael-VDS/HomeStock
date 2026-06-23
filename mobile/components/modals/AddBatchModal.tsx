@@ -371,7 +371,7 @@ export default function AddBatchModal({ visible, onClose, onSuccess }: AddBatchM
                 style={[styles.modalButton, styles.modalButtonPrimary]}
                 onPress={handleDateConfirm}
               >
-                <Text style={styles.modalButtonTextPrimary}>Confirmer</Text>
+                <Text style={styles.modalButtonTextPrimary}>OK</Text>
               </TouchableOpacity>
             </View>
           </View>

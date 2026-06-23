@@ -92,9 +92,40 @@ export default function PanierScreen() {
     );
   };
 
+  const formatDateInput = (raw: string): string => {
+    let digits = raw.replace(/\D/g, '');
+
+    // Jour : si 1er chiffre > 3, préfixer par 0 (ex: "4" → "04")
+    if (digits.length >= 1 && parseInt(digits[0]) > 3) {
+      digits = '0' + digits;
+    }
+    // Jour : clamp entre 01 et 31
+    if (digits.length >= 2) {
+      const day = parseInt(digits.slice(0, 2));
+      if (day > 31) digits = '31' + digits.slice(2);
+      else if (day === 0) digits = '01' + digits.slice(2);
+    }
+
+    // Mois : si 1er chiffre du mois > 1, préfixer par 0 (ex: "3" → "03")
+    if (digits.length >= 3 && parseInt(digits[2]) > 1) {
+      digits = digits.slice(0, 2) + '0' + digits.slice(2);
+    }
+    // Mois : clamp entre 01 et 12
+    if (digits.length >= 4) {
+      const month = parseInt(digits.slice(2, 4));
+      if (month > 12) digits = digits.slice(0, 2) + '12' + digits.slice(4);
+      else if (month === 0) digits = digits.slice(0, 2) + '01' + digits.slice(4);
+    }
+
+    digits = digits.slice(0, 8);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+  };
+
   const setDate = (lineId: string, value: string) => {
     setLines((prev) =>
-      prev.map((l) => (l.lineId === lineId ? { ...l, expirationDate: value } : l))
+      prev.map((l) => (l.lineId === lineId ? { ...l, expirationDate: formatDateInput(value) } : l))
     );
   };
 
@@ -275,7 +306,7 @@ export default function PanierScreen() {
                     placeholderTextColor="#bbb"
                     value={line.expirationDate}
                     onChangeText={(v) => setDate(line.lineId, v)}
-                    keyboardType="numeric"
+                    keyboardType="number-pad"
                     maxLength={10}
                   />
                 </View>

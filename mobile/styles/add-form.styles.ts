@@ -215,12 +215,12 @@ export const styles = StyleSheet.create({
   },
   modalButtonTextPrimary: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '600',
   },
   modalButtonTextSecondary: {
     color: '#666',
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '600',
   },
 });

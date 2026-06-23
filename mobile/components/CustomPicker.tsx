@@ -39,10 +39,10 @@ export default function CustomPicker({
         style={styles.pickerButton}
         onPress={() => setIsVisible(true)}
       >
-        <Text style={[styles.pickerButtonText, !selectedItem && styles.placeholder]}>
+        <Text style={[styles.pickerButtonText, !selectedItem && styles.placeholder]} numberOfLines={1}>
           {selectedItem ? selectedItem.name : placeholder}
         </Text>
-        <Ionicons name="chevron-down" size={20} color="#666" />
+        <Ionicons name="chevron-down" size={20} color="#666" style={{ flexShrink: 0 }} />
       </TouchableOpacity>
 
       <Modal
@@ -113,6 +113,8 @@ const styles = StyleSheet.create({
   pickerButtonText: {
     fontSize: 16,
     color: '#333',
+    flex: 1,
+    marginRight: 8,
   },
   placeholder: {
     color: '#999',
